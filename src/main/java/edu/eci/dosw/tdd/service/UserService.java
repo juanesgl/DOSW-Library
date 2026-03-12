@@ -1,11 +1,9 @@
 package edu.eci.dosw.tdd.service;
 import edu.eci.dosw.tdd.model.User;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 
 @Service
 public class UserService {

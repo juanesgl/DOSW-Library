@@ -2,7 +2,6 @@ package edu.eci.dosw.tdd.service;
 
 import edu.eci.dosw.tdd.model.Book;
 import org.springframework.stereotype.Service;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -26,7 +25,7 @@ public class BookService {
                 .findFirst();
     }
 
-    public boolean isAvailable(Book book){
+    public boolean isBookAvailable(Book book){
         return bookInventory.getOrDefault(book, 0) > 0;
     }
 
