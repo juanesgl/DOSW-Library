@@ -7,7 +7,7 @@ Este documento describe la arquitectura y el diseño técnico del sistema de bib
 ### 1. Diagrama de Componentes de la Biblioteca
 _Descripción general de la interacción entre los principales bloques del sistema._
 
-> ![Componentes](../../../../../../../docs/uml/componentes.png)
+> ![Componentes](../../docs/uml/componentes.png)
 
 ---
 
@@ -15,13 +15,11 @@ _Descripción general de la interacción entre los principales bloques del siste
 _Detalle profundo de los módulos internos, servicios y su comunicación._
 
 
-> ![Componente Específico](../../../../../../../docs/uml/componentespecifico.png)
+> ![Componente Específico](../../docs/uml/componentespecifico.png)
 
 ---
 
 ### 3. Diagrama de Clases
 _Estructura detallada de las entidades, servicios, controladores y sus relaciones._
 
-
-
-> ![Diagrama de Clases](../../../../../../../docs/uml/clases.png)
+> ![Diagrama de Clases](../../docs/uml/clases.png)

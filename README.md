@@ -78,7 +78,7 @@ Después de ejecutar las pruebas, el reporte se genera en:
 
 ## 📁 Estructura del Proyecto
 
-Ver [Documentación de Arquitectura](src/main/java/edu/eci/dosw/tdd/README.md) para más detalles.
+Ver [Documentación de Arquitectura](src/main/README.md) para más detalles.
 
 ```text
 src/main/java/edu/eci/dosw/tdd/
