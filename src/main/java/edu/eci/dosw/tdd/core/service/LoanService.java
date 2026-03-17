@@ -1,9 +1,9 @@
-package edu.eci.dosw.tdd.service;
-import edu.eci.dosw.tdd.exception.BookNotAvaibleException;
-import edu.eci.dosw.tdd.model.Book;
-import edu.eci.dosw.tdd.model.Loan;
-import edu.eci.dosw.tdd.model.LoanStatus;
-import edu.eci.dosw.tdd.model.User;
+package edu.eci.dosw.tdd.core.service;
+import edu.eci.dosw.tdd.core.exception.BookNotAvaibleException;
+import edu.eci.dosw.tdd.core.model.Book;
+import edu.eci.dosw.tdd.core.model.Loan;
+import edu.eci.dosw.tdd.core.model.LoanStatus;
+import edu.eci.dosw.tdd.core.model.User;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;

@@ -1,5 +1,5 @@
-package edu.eci.dosw.tdd.service;
-import edu.eci.dosw.tdd.model.User;
+package edu.eci.dosw.tdd.core.service;
+import edu.eci.dosw.tdd.core.model.User;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;

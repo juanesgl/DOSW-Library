@@ -1,6 +1,6 @@
-package edu.eci.dosw.tdd.service;
+package edu.eci.dosw.tdd.core.service;
 
-import edu.eci.dosw.tdd.model.Book;
+import edu.eci.dosw.tdd.core.model.Book;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
