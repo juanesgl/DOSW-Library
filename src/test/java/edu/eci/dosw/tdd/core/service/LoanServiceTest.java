@@ -93,7 +93,6 @@ class LoanServiceTest {
         when(bookService.getBookById(anyString())).thenReturn(Optional.of(sampleBook));
         when(bookService.isBookAvailable(any())).thenReturn(true);
 
-        // Simulamos 3 préstamos previos
         loanService.createLoan("user-1", "book-1");
         loanService.createLoan("user-1", "book-2");
         loanService.createLoan("user-1", "book-3");
