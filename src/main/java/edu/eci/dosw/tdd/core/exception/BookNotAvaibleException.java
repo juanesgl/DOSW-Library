@@ -1,10 +1,9 @@
 package edu.eci.dosw.tdd.core.exception;
 
-public class BookNotAvaibleException extends Exception {
+import lombok.EqualsAndHashCode;
 
-    public static final String BOOK_NOT_AVAILABLE = "THERE'S NO BOOK AVAILABLE";
-    public static final String USER_NOT_FOUND = "THE USER DOESN'T EXIST";
-    public static final String BOOK_NOT_FOUND = "WE CAN'T FIND THE BOOK";
+@EqualsAndHashCode(callSuper = true)
+public class BookNotAvaibleException extends RuntimeException {
     public BookNotAvaibleException(String message) {
         super(message);
     }

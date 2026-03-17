@@ -1,44 +1,50 @@
 package edu.eci.dosw.tdd.controller;
 
+import edu.eci.dosw.tdd.controller.dto.UserDTO;
+import edu.eci.dosw.tdd.controller.mapper.UserMapper;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
-@Tag(name = "Users", description = "Operations related to library users")
+@RequiredArgsConstructor // <-- Lombok inyecta los 'final' automáticamente
+@Tag(name = "Usuarios", description = "Operaciones relacionadas con los usuarios")
 public class UserController {
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
+    private final UserMapper userMapper;
 
     @PostMapping
-    @Operation(summary = "Create a new user", description = "Registers a user in the library system")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
+    @Operation(summary = "Crear un nuevo usuario", description = "Registra un usuario en el sistema")
+    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
+        User user = userMapper.toEntity(userDTO);
         User createdUser = userService.registerUser(user);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(userMapper.toDto(createdUser), HttpStatus.CREATED);
     }
 
     @GetMapping
-    @Operation(summary = "Get all users", description = "Returns a list with all registered users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    @Operation(summary = "Obtener todos los usuarios", description = "Devuelve la lista de usuarios registrados")
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers().stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
     }
 
-    @GetMapping("/{ID}")
-    @Operation(summary = "Get user by ID", description = "Returns a user based on their unique identifier")
-    public ResponseEntity<User> getUserByID(@PathVariable String ID) {
-        User user = userService.getUserByID(ID)
-                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + ID));
-        return ResponseEntity.ok(user);
+    @GetMapping("/{id}")
+    @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario por su identificador único")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
+        return ResponseEntity.ok(userMapper.toDto(user));
     }
 }

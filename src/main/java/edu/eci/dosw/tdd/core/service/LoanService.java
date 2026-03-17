@@ -1,40 +1,62 @@
 package edu.eci.dosw.tdd.core.service;
+
 import edu.eci.dosw.tdd.core.exception.BookNotAvaibleException;
+import edu.eci.dosw.tdd.core.exception.LoanLimitExceededException;
+import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.LoanStatus;
 import edu.eci.dosw.tdd.core.model.User;
+import edu.eci.dosw.tdd.core.validator.LoanValidator;
+import edu.eci.dosw.tdd.core.util.DateUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.LocalDate;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class LoanService {
-    
-    private List<Loan> loans = new ArrayList<>();
+
     private final UserService userService;
     private final BookService bookService;
+    private final LoanValidator loanValidator;
 
-    public LoanService(UserService userService, BookService bookService) {
-        this.userService = userService;
-        this.bookService = bookService;
-    }
+    private final List<Loan> loans = new ArrayList<>();
 
-    public Loan createLoan(String userId, String bookId) throws BookNotAvaibleException {
-        User user = userService.getUserByID(userId)
-                .orElseThrow(() -> new IllegalArgumentException(BookNotAvaibleException.USER_NOT_FOUND + userId));
+    public Loan createLoan(String userId, String bookId) {
+        User user = userService.getUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException("El usuario con ID " + userId + " no existe."));
 
-        Book book = bookService.getBookByID(bookId)
-                .orElseThrow(() -> new IllegalArgumentException(BookNotAvaibleException.BOOK_NOT_FOUND + bookId));
+        Book book = bookService.getBookById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("El libro con ID " + bookId + " no existe."));
 
+        // Validamos que los objetos no sean nulos
+        loanValidator.validateLoanCreation(user, book);
+
+        // Verificamos disponibilidad
         if (!bookService.isBookAvailable(book)) {
-            throw new BookNotAvaibleException(BookNotAvaibleException.BOOK_NOT_AVAILABLE);
+            throw new BookNotAvaibleException("El libro '" + book.getTitle() + "' no está disponible.");
         }
 
-        Loan newLoan = new Loan(book, user, LocalDate.now(), LoanStatus.ACTIVE, null);
-        loans.add(newLoan);
+        // Regla de negocio extra: Límite de préstamos usando la excepción que creaste
+        long activeLoans = loans.stream()
+                .filter(l -> l.getUser().getId().equals(userId) && l.getStatus() == LoanStatus.ACTIVE)
+                .count();
+        if (activeLoans >= 3) {
+            throw new LoanLimitExceededException("El usuario ya alcanzó el límite máximo de libros prestados.");
+        }
 
+        // Usamos el @Builder de Lombok y DateUtil
+        Loan newLoan = Loan.builder()
+                .book(book)
+                .user(user)
+                .loanDate(DateUtil.getCurrentDate())
+                .status(LoanStatus.ACTIVE)
+                .build();
+
+        loans.add(newLoan);
         bookService.updateBookAvailability(book, -1);
 
         return newLoan;
@@ -42,14 +64,14 @@ public class LoanService {
 
     public Loan returnLoan(String userId, String bookId) {
         Loan activeLoan = loans.stream()
-                .filter(loan -> loan.getUser().getID().equals(userId)
-                        && loan.getBook().getID().equals(bookId)
+                .filter(loan -> loan.getUser().getId().equals(userId)
+                        && loan.getBook().getId().equals(bookId)
                         && loan.getStatus() == LoanStatus.ACTIVE)
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("NO ACTIVE LOAN FOUND FOR USER: " + userId + " AND BOOK: " + bookId + " "));
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró un préstamo activo para este usuario y libro."));
 
         activeLoan.setStatus(LoanStatus.RETURNED);
-        activeLoan.setReturnDate(LocalDate.now());
+        activeLoan.setReturnDate(DateUtil.getCurrentDate());
 
         bookService.updateBookAvailability(activeLoan.getBook(), 1);
 
@@ -59,5 +81,4 @@ public class LoanService {
     public List<Loan> getAllLoans() {
         return loans;
     }
-
 }

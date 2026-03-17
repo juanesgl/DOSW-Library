@@ -1,44 +1,57 @@
 package edu.eci.dosw.tdd.controller;
 
+import edu.eci.dosw.tdd.controller.dto.BookDTO;
+import edu.eci.dosw.tdd.controller.mapper.BookMapper;
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/books")
-@Tag(name = "Books", description = "Inventory operations and book lookup")
+@RequiredArgsConstructor
+@Tag(name = "Libros", description = "Operaciones de inventario y consulta de libros")
 public class BookController {
 
     private final BookService bookService;
-
-    public BookController(BookService bookService) {
-        this.bookService = bookService;
-    }
+    private final BookMapper bookMapper;
 
     @PostMapping
-    @Operation(summary = "Add a book", description = "Adds a new book to the inventory with an initial quantity")
-    public ResponseEntity<Book> addBook(@RequestBody Book book, @RequestParam(defaultValue = "1") int quantity) {
-        Book createdBook = bookService.addBook(book, quantity);
-        return new ResponseEntity<>(createdBook, HttpStatus.CREATED);
+    @Operation(summary = "Agregar un libro", description = "Añade un libro al inventario con su cantidad inicial")
+    public ResponseEntity<BookDTO> addBook(@RequestBody BookDTO bookDTO) {
+        Book book = bookMapper.toEntity(bookDTO);
+        Book createdBook = bookService.addBook(book, bookDTO.getInitialQuantity());
+        return new ResponseEntity<>(bookMapper.toDto(createdBook), HttpStatus.CREATED);
     }
 
     @GetMapping
-    @Operation(summary = "Get inventory", description = "Returns the book catalog along with its available quantity")
-    public ResponseEntity<Map<Book, Integer>> getAllBooks() {
-        return ResponseEntity.ok(bookService.getAllBooks());
+    @Operation(summary = "Obtener inventario", description = "Devuelve el catálogo de libros")
+    public ResponseEntity<List<BookDTO>> getAllBooks() {
+        // Obtenemos el mapa y lo convertimos a una lista de DTOs para la respuesta
+        Map<Book, Integer> inventory = bookService.getAllBooks();
+        List<BookDTO> books = inventory.entrySet().stream()
+                .map(entry -> {
+                    BookDTO dto = bookMapper.toDto(entry.getKey());
+                    dto.setInitialQuantity(entry.getValue()); // Reusamos este campo para mostrar la disponibilidad actual
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(books);
     }
 
-    @GetMapping("/{ID}")
-    @Operation(summary = "Search book by ID", description = "Finds detailed information of a specific book")
-    public ResponseEntity<Book> getBookByID(@PathVariable String ID) {
-        Book book = bookService.getBookByID(ID)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found with ID: " + ID));
-        return ResponseEntity.ok(book);
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar libro por ID", description = "Busca la información detallada de un libro")
+    public ResponseEntity<BookDTO> getBookById(@PathVariable String id) {
+        Book book = bookService.getBookById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado con ID: " + id));
+        return ResponseEntity.ok(bookMapper.toDto(book));
     }
 }
