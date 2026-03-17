@@ -32,15 +32,12 @@ public class LoanService {
         Book book = bookService.getBookById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("El libro con ID " + bookId + " no existe."));
 
-        // Validamos que los objetos no sean nulos
         loanValidator.validateLoanCreation(user, book);
 
-        // Verificamos disponibilidad
         if (!bookService.isBookAvailable(book)) {
             throw new BookNotAvaibleException("El libro '" + book.getTitle() + "' no está disponible.");
         }
 
-        // Regla de negocio extra: Límite de préstamos usando la excepción que creaste
         long activeLoans = loans.stream()
                 .filter(l -> l.getUser().getId().equals(userId) && l.getStatus() == LoanStatus.ACTIVE)
                 .count();
@@ -48,7 +45,6 @@ public class LoanService {
             throw new LoanLimitExceededException("El usuario ya alcanzó el límite máximo de libros prestados.");
         }
 
-        // Usamos el @Builder de Lombok y DateUtil
         Loan newLoan = Loan.builder()
                 .book(book)
                 .user(user)

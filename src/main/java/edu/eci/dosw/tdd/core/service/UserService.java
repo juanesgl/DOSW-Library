@@ -18,10 +18,8 @@ public class UserService {
     private final List<User> users = new ArrayList<>();
 
     public User registerUser(User user) {
-        // 1. Validamos las reglas de negocio
-        userValidator.validate(user);
 
-        // 2. Generamos un ID si no lo tiene
+        userValidator.validate(user);
         if (user.getId() == null) {
             user.setId(IdGeneratorUtil.generateId());
         }

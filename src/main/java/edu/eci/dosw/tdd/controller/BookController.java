@@ -35,12 +35,11 @@ public class BookController {
     @GetMapping
     @Operation(summary = "Obtener inventario", description = "Devuelve el catálogo de libros")
     public ResponseEntity<List<BookDTO>> getAllBooks() {
-        // Obtenemos el mapa y lo convertimos a una lista de DTOs para la respuesta
         Map<Book, Integer> inventory = bookService.getAllBooks();
         List<BookDTO> books = inventory.entrySet().stream()
                 .map(entry -> {
                     BookDTO dto = bookMapper.toDto(entry.getKey());
-                    dto.setInitialQuantity(entry.getValue()); // Reusamos este campo para mostrar la disponibilidad actual
+                    dto.setInitialQuantity(entry.getValue());
                     return dto;
                 })
                 .collect(Collectors.toList());
