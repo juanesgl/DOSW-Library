@@ -9,9 +9,9 @@ _Análisis de cobertura nativo del IDE para ejecuciones rápidas durante el desa
 
 
 
-> ![IntelliJ](../../../../../../../docs/tests/intellipas.png)
+> ![Pruebas en IntelliJ](../../../../docs/tests/intellipas.png)
 
-> ![IntelliJ](../../../../../../../docs/tests/intecoverage.png)
+> ![Pruebas en IntelliJ 2](../../../../docs/tests/intecoverage.png)
 
 ---
 
