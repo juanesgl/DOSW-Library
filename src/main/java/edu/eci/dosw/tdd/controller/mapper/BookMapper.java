@@ -24,7 +24,6 @@ public class BookMapper {
                 .id(entity.getId())
                 .title(entity.getTitle())
                 .author(entity.getAuthor())
-                // initialQuantity se asigna manualmente en el controlador cuando es necesario
                 .build();
     }
 }
