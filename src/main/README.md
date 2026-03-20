@@ -5,17 +5,45 @@ Este documento describe la arquitectura y el diseño técnico del sistema de bib
 ## 🏗️ Diagramas 
 
 ### 1. Diagrama de Componentes de la Biblioteca
-_Descripción general de la interacción entre los principales bloques del sistema._
-
 > ![Componentes](../../docs/uml/componentes.png)
+
+- La aplicación de biblioteca sigue una arquitectura en capas donde el 
+usuario final interactúa con el sistema a través del Frontend, 
+que es la interfaz de usuario. 
+- El Frontend consume los servicios expuestos por el Backend 
+mediante una API, solicitando información o enviando acciones 
+como buscar libros, iniciar sesión o solicitar préstamos. 
+- El Backend actúa como la capa de lógica de negocio, 
+encargándose de procesar estas solicitudes, aplicar reglas del 
+sistema y gestionar las operaciones necesarias. Finalmente, 
+el Backend se comunica directamente con la Base de Datos, 
+que es la capa de persistencia donde se almacenan y administran 
+los datos de libros, usuarios y préstamos, garantizando que el 
+Frontend nunca acceda a los datos de forma directa por razones de 
+seguridad y 
+organización.
 
 ---
 
 ### 2. Diagrama Específico de Componentes
-_Detalle profundo de los módulos internos, servicios y su comunicación._
-
 
 > ![Componente Específico](../../docs/uml/componentespecifico.png)
+
+El sistema backend se organiza en controladores, 
+servicios y componentes de apoyo. Los controladores 
+actúan como punto de entrada para las peticiones del 
+Frontend: BookController gestiona solicitudes relacionadas 
+con el catálogo de libros, UserController maneja las operaciones de 
+los usuarios y LoanController procesa las solicitudes de préstamos. 
+Estos controladores delegan el procesamiento a los servicios, que contienen 
+la lógica de negocio del sistema: BookService administra las operaciones sobre 
+libros, UserService gestiona la información y estado de los usuarios, y 
+LoanService se encarga del proceso de préstamos y devoluciones. 
+Para completar procesos más complejos, los servicios colaboran entre sí; por ejemplo, 
+LoanService consulta a UserService para verificar al usuario y a BookService para confirmar 
+la disponibilidad de un libro. Finalmente, LoanService utiliza un Validator 
+para asegurar que todas las reglas del sistema se cumplan antes de registrar un préstamo, 
+garantizando la integridad y validez de las operaciones.
 
 ---
 
