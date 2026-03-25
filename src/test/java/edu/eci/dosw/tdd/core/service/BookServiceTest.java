@@ -164,4 +164,60 @@ class BookServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity(1L));
     }
+
+    @Test
+    void addBook_ShouldThrowException_WhenTotalQuantityIsNull() {
+        doNothing().when(bookValidator).validate(any(Book.class));
+        Book invalidBook = Book.builder().title("Book").author("Author").totalQuantity(null).availableQuantity(3)
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(invalidBook));
+    }
+
+    @Test
+    void addBook_ShouldThrowException_WhenAvailableQuantityIsNull() {
+        doNothing().when(bookValidator).validate(any(Book.class));
+        Book invalidBook = Book.builder().title("Book").author("Author").totalQuantity(5).availableQuantity(null)
+                .build();
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(invalidBook));
+    }
+
+    @Test
+    void isBookAvailable_ShouldReturnFalse_WhenBookNotFound() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertFalse(bookService.isBookAvailable(99L));
+    }
+
+    @Test
+    void getBookById_ShouldReturnEmpty_WhenBookDoesNotExist() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        Optional<Book> result = bookService.getBookById(99L);
+
+        assertFalse(result.isPresent());
+    }
+
+    @Test
+    void decreaseAvailableQuantity_ShouldThrow_WhenBookNotFound() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.decreaseAvailableQuantity(99L));
+    }
+
+    @Test
+    void decreaseAvailableQuantity_ShouldThrow_WhenNoAvailableCopies() {
+        BookEntity entity = BookEntity.builder().id(1L).totalQuantity(5).availableQuantity(0).build();
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(entity));
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.decreaseAvailableQuantity(1L));
+    }
+
+    @Test
+    void increaseAvailableQuantity_ShouldThrow_WhenBookNotFound() {
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity(99L));
+    }
 }

@@ -153,4 +153,12 @@ class LoanServiceTest {
         assertEquals(1, allLoans.size());
         verify(loanRepository, times(1)).findAll();
     }
+
+    @Test
+    void createLoan_ShouldThrowException_WhenBookDoesNotExist() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUserEntity));
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> loanService.createLoan(1L, 99L));
+    }
 }
