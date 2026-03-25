@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -39,46 +38,51 @@ class BookControllerTest {
 
     @Test
     void addBook_ShouldReturnCreatedBook() throws Exception {
-        BookDTO bookDTO = BookDTO.builder().title("Clean Code").author("Uncle Bob").initialQuantity(5).build();
-        Book book = Book.builder().id("b1").title("Clean Code").author("Uncle Bob").build();
-        BookDTO responseDTO = BookDTO.builder().id("b1").title("Clean Code").author("Uncle Bob").build();
+        BookDTO bookDTO = BookDTO.builder().title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                .availableQuantity(5).build();
+        Book book = Book.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5).availableQuantity(5)
+                .build();
+        BookDTO responseDTO = BookDTO.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                .availableQuantity(5).build();
 
         when(bookMapper.toEntity(any(BookDTO.class))).thenReturn(book);
-        when(bookService.addBook(any(Book.class), anyInt())).thenReturn(book);
+        when(bookService.addBook(any(Book.class))).thenReturn(book);
         when(bookMapper.toDto(any(Book.class))).thenReturn(responseDTO);
 
         mockMvc.perform(post("/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(bookDTO)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(bookDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value("b1"))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Clean Code"));
     }
 
     @Test
     void getAllBooks_ShouldReturnInventory() throws Exception {
-        Book book = Book.builder().id("b1").title("Clean Code").author("Uncle Bob").build();
-        BookDTO bookDTO = BookDTO.builder().id("b1").title("Clean Code").author("Uncle Bob").build();
+        Book book = Book.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5).availableQuantity(5)
+                .build();
+        BookDTO bookDTO = BookDTO.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                .availableQuantity(5).build();
 
-        when(bookService.getAllBooks()).thenReturn(Collections.singletonMap(book, 10));
+        when(bookService.getAllBooks()).thenReturn(Collections.singletonList(book));
         when(bookMapper.toDto(book)).thenReturn(bookDTO);
 
         mockMvc.perform(get("/books"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("b1"))
-                .andExpect(jsonPath("$[0].initialQuantity").value(10));
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].totalQuantity").value(5));
     }
 
     @Test
     void getBookById_ShouldReturnBook_WhenExists() throws Exception {
-        Book book = Book.builder().id("b1").title("Clean Code").build();
-        BookDTO bookDTO = BookDTO.builder().id("b1").title("Clean Code").build();
+        Book book = Book.builder().id(1L).title("Clean Code").build();
+        BookDTO bookDTO = BookDTO.builder().id(1L).title("Clean Code").build();
 
-        when(bookService.getBookById("b1")).thenReturn(Optional.of(book));
+        when(bookService.getBookById(1L)).thenReturn(Optional.of(book));
         when(bookMapper.toDto(book)).thenReturn(bookDTO);
 
-        mockMvc.perform(get("/books/b1"))
+        mockMvc.perform(get("/books/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("b1"));
+                .andExpect(jsonPath("$.id").value(1));
     }
 }

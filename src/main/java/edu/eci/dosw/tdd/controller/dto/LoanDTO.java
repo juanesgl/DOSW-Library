@@ -13,8 +13,9 @@ import java.time.LocalDate;
 @Builder
 
 public class LoanDTO {
-    private String userId;
-    private String bookId;
+    private Long id;
+    private Long userId;
+    private Long bookId;
     private LocalDate loanDate;
     private String status;
     private LocalDate returnDate;

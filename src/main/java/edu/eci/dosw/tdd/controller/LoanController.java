@@ -25,14 +25,14 @@ public class LoanController {
 
     @PostMapping
     @Operation(summary = "Crear un préstamo", description = "Asigna un libro a un usuario")
-    public ResponseEntity<LoanDTO> createLoan(@RequestParam String userId, @RequestParam String bookId) {
+    public ResponseEntity<LoanDTO> createLoan(@RequestParam Long userId, @RequestParam Long bookId) {
         Loan newLoan = loanService.createLoan(userId, bookId);
         return new ResponseEntity<>(loanMapper.toDto(newLoan), HttpStatus.CREATED);
     }
 
     @PutMapping("/return")
     @Operation(summary = "Devolver un libro", description = "Registra la devolución de un libro prestado")
-    public ResponseEntity<LoanDTO> returnLoan(@RequestParam String userId, @RequestParam String bookId) {
+    public ResponseEntity<LoanDTO> returnLoan(@RequestParam Long userId, @RequestParam Long bookId) {
         Loan returnedLoan = loanService.returnLoan(userId, bookId);
         return ResponseEntity.ok(loanMapper.toDto(returnedLoan));
     }

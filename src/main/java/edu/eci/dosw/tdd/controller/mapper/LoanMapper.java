@@ -8,10 +8,11 @@ import org.springframework.stereotype.Component;
 public class LoanMapper {
 
     public LoanDTO toDto(Loan entity) {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
 
         return LoanDTO.builder()
-                // Extraemos solo el ID del usuario y del libro si no son nulos
+                .id(entity.getId())
                 .userId(entity.getUser() != null ? entity.getUser().getId() : null)
                 .bookId(entity.getBook() != null ? entity.getBook().getId() : null)
                 .loanDate(entity.getLoanDate())

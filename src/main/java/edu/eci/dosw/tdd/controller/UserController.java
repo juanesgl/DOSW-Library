@@ -42,7 +42,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario por su identificador único")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
         return ResponseEntity.ok(userMapper.toDto(user));

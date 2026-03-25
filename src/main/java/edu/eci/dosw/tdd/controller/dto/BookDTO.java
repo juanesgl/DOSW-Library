@@ -11,8 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 
 public class BookDTO {
-    private String id;
+    private Long id;
     private String title;
     private String author;
-    private int initialQuantity;
+    private Integer totalQuantity;
+    private Integer availableQuantity;
 }

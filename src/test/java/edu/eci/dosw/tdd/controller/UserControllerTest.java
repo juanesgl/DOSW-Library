@@ -38,53 +38,54 @@ class UserControllerTest {
 
     @Test
     void registerUser_ShouldReturnCreatedUser() throws Exception {
-        UserDTO userDTO = UserDTO.builder().name("Test User").build();
-        User user = User.builder().id("1").name("Test User").build();
-        UserDTO responseDTO = UserDTO.builder().id("1").name("Test User").build();
+        UserDTO userDTO = UserDTO.builder().name("Test User").username("testuser").password("pass").role("USER")
+                .build();
+        User user = User.builder().id(1L).name("Test User").username("testuser").role("USER").build();
+        UserDTO responseDTO = UserDTO.builder().id(1L).name("Test User").username("testuser").role("USER").build();
 
         when(userMapper.toEntity(any(UserDTO.class))).thenReturn(user);
         when(userService.registerUser(any(User.class))).thenReturn(user);
         when(userMapper.toDto(any(User.class))).thenReturn(responseDTO);
 
         mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userDTO)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(userDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test User"));
     }
 
     @Test
     void getAllUsers_ShouldReturnListOfUsers() throws Exception {
-        User user = User.builder().id("1").name("Test User").build();
-        UserDTO userDTO = UserDTO.builder().id("1").name("Test User").build();
+        User user = User.builder().id(1L).name("Test User").build();
+        UserDTO userDTO = UserDTO.builder().id(1L).name("Test User").build();
 
         when(userService.getAllUsers()).thenReturn(Collections.singletonList(user));
         when(userMapper.toDto(user)).thenReturn(userDTO);
 
         mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value("1"))
+                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("Test User"));
     }
 
     @Test
     void getUserById_ShouldReturnUser_WhenExists() throws Exception {
-        User user = User.builder().id("1").name("Test User").build();
-        UserDTO userDTO = UserDTO.builder().id("1").name("Test User").build();
+        User user = User.builder().id(1L).name("Test User").build();
+        UserDTO userDTO = UserDTO.builder().id(1L).name("Test User").build();
 
-        when(userService.getUserById("1")).thenReturn(Optional.of(user));
+        when(userService.getUserById(1L)).thenReturn(Optional.of(user));
         when(userMapper.toDto(user)).thenReturn(userDTO);
 
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.name").value("Test User"));
     }
 
     @Test
     void getUserById_ShouldReturnBadRequest_WhenNotExists() throws Exception {
-        when(userService.getUserById("99")).thenReturn(Optional.empty());
+        when(userService.getUserById(99L)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/users/99"))
                 .andExpect(status().isBadRequest());

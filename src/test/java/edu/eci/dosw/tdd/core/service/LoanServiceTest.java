@@ -3,11 +3,18 @@ package edu.eci.dosw.tdd.core.service;
 import edu.eci.dosw.tdd.core.exception.BookNotAvaibleException;
 import edu.eci.dosw.tdd.core.exception.LoanLimitExceededException;
 import edu.eci.dosw.tdd.core.exception.UserNotFoundException;
-import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.model.LoanStatus;
 import edu.eci.dosw.tdd.core.model.User;
+import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.validator.LoanValidator;
+import edu.eci.dosw.tdd.persistence.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.entity.LoanEntity;
+import edu.eci.dosw.tdd.persistence.entity.UserEntity;
+import edu.eci.dosw.tdd.persistence.mapper.LoanEntityMapper;
+import edu.eci.dosw.tdd.persistence.repository.BookRepository;
+import edu.eci.dosw.tdd.persistence.repository.LoanRepository;
+import edu.eci.dosw.tdd.persistence.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,127 +22,135 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LoanServiceTest {
 
     @Mock
-    private UserService userService;
+    private UserRepository userRepository;
 
     @Mock
-    private BookService bookService;
+    private BookRepository bookRepository;
+
+    @Mock
+    private LoanRepository loanRepository;
+
+    @Mock
+    private LoanEntityMapper loanEntityMapper;
 
     @Mock
     private LoanValidator loanValidator;
 
+    @Mock
+    private BookService bookService;
+
     @InjectMocks
     private LoanService loanService;
 
-    private User sampleUser;
-    private Book sampleBook;
+    private UserEntity sampleUserEntity;
+    private BookEntity sampleBookEntity;
+    private LoanEntity sampleLoanEntity;
+    private Loan sampleLoan;
 
     @BeforeEach
     void setUp() {
-        sampleUser = User.builder().id("user-1").name("Test User").build();
-        sampleBook = Book.builder().id("book-1").title("Test Book").build();
+        sampleUserEntity = UserEntity.builder().id(1L).name("Test User").username("testuser").password("pass")
+                .role("USER").build();
+        sampleBookEntity = BookEntity.builder().id(1L).title("Test Book").author("Author").totalQuantity(5)
+                .availableQuantity(5).build();
+        sampleLoanEntity = LoanEntity.builder().id(1L).user(sampleUserEntity).book(sampleBookEntity)
+                .loanDate(LocalDate.now()).status(LoanStatus.ACTIVE).build();
+        sampleLoan = Loan.builder().id(1L)
+                .user(User.builder().id(1L).name("Test User").build())
+                .book(Book.builder().id(1L).title("Test Book").build())
+                .loanDate(LocalDate.now()).status(LoanStatus.ACTIVE).build();
     }
 
     @Test
     void createLoan_ShouldCreateLoanSuccessfully() {
-        // Arrange
-        when(userService.getUserById("user-1")).thenReturn(Optional.of(sampleUser));
-        when(bookService.getBookById("book-1")).thenReturn(Optional.of(sampleBook));
-        when(bookService.isBookAvailable(sampleBook)).thenReturn(true);
-        doNothing().when(loanValidator).validateLoanCreation(sampleUser, sampleBook);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUserEntity));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleBookEntity));
+        when(bookService.isBookAvailable(1L)).thenReturn(true);
+        when(loanRepository.countByUserIdAndStatus(1L, LoanStatus.ACTIVE)).thenReturn(0L);
+        when(loanRepository.save(any(LoanEntity.class))).thenReturn(sampleLoanEntity);
+        when(loanEntityMapper.toModel(any(LoanEntity.class))).thenReturn(sampleLoan);
+        doNothing().when(loanValidator).validateLoanCreation(any(), any());
+        doNothing().when(bookService).decreaseAvailableQuantity(1L);
 
-        // Act
-        Loan loan = loanService.createLoan("user-1", "book-1");
+        Loan loan = loanService.createLoan(1L, 1L);
 
-        // Assert
         assertNotNull(loan);
-        assertEquals(sampleUser, loan.getUser());
-        assertEquals(sampleBook, loan.getBook());
         assertEquals(LoanStatus.ACTIVE, loan.getStatus());
-        verify(bookService, times(1)).updateBookAvailability(sampleBook, -1);
+        verify(bookService, times(1)).decreaseAvailableQuantity(1L);
     }
 
     @Test
     void createLoan_ShouldThrowUserNotFoundException_WhenUserDoesNotExist() {
-        // Arrange
-        when(userService.getUserById("user-1")).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(UserNotFoundException.class, () -> loanService.createLoan("user-1", "book-1"));
+        assertThrows(UserNotFoundException.class, () -> loanService.createLoan(1L, 1L));
     }
 
     @Test
     void createLoan_ShouldThrowBookNotAvaibleException_WhenBookIsNotAvailable() {
-        // Arrange
-        when(userService.getUserById("user-1")).thenReturn(Optional.of(sampleUser));
-        when(bookService.getBookById("book-1")).thenReturn(Optional.of(sampleBook));
-        when(bookService.isBookAvailable(sampleBook)).thenReturn(false);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUserEntity));
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleBookEntity));
+        when(bookService.isBookAvailable(1L)).thenReturn(false);
 
-        // Act & Assert
-        assertThrows(BookNotAvaibleException.class, () -> loanService.createLoan("user-1", "book-1"));
+        assertThrows(BookNotAvaibleException.class, () -> loanService.createLoan(1L, 1L));
     }
 
     @Test
     void createLoan_ShouldThrowLoanLimitExceededException_WhenUserHasThreeActiveLoans() {
-        // Arrange
-        when(userService.getUserById("user-1")).thenReturn(Optional.of(sampleUser));
-        when(bookService.getBookById(anyString())).thenReturn(Optional.of(sampleBook));
-        when(bookService.isBookAvailable(any())).thenReturn(true);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleUserEntity));
+        when(bookRepository.findById(anyLong())).thenReturn(Optional.of(sampleBookEntity));
+        when(bookService.isBookAvailable(anyLong())).thenReturn(true);
+        when(loanRepository.countByUserIdAndStatus(1L, LoanStatus.ACTIVE)).thenReturn(3L);
 
-        loanService.createLoan("user-1", "book-1");
-        loanService.createLoan("user-1", "book-2");
-        loanService.createLoan("user-1", "book-3");
-
-        // Act & Assert
-        assertThrows(LoanLimitExceededException.class, () -> loanService.createLoan("user-1", "book-4"));
+        assertThrows(LoanLimitExceededException.class, () -> loanService.createLoan(1L, 1L));
     }
 
     @Test
     void returnLoan_ShouldReturnBookSuccessfully() {
-        // Arrange
-        when(userService.getUserById("user-1")).thenReturn(Optional.of(sampleUser));
-        when(bookService.getBookById("book-1")).thenReturn(Optional.of(sampleBook));
-        when(bookService.isBookAvailable(sampleBook)).thenReturn(true);
-        loanService.createLoan("user-1", "book-1");
+        when(loanRepository.findFirstByUserIdAndBookIdAndStatus(1L, 1L, LoanStatus.ACTIVE))
+                .thenReturn(Optional.of(sampleLoanEntity));
+        Loan returnedModel = Loan.builder().id(1L).status(LoanStatus.RETURNED).returnDate(LocalDate.now()).build();
+        when(loanRepository.save(any(LoanEntity.class))).thenReturn(sampleLoanEntity);
+        when(loanEntityMapper.toModel(any(LoanEntity.class))).thenReturn(returnedModel);
+        doNothing().when(bookService).increaseAvailableQuantity(1L);
 
-        // Act
-        Loan returnedLoan = loanService.returnLoan("user-1", "book-1");
+        Loan returnedLoan = loanService.returnLoan(1L, 1L);
 
-        // Assert
         assertEquals(LoanStatus.RETURNED, returnedLoan.getStatus());
         assertNotNull(returnedLoan.getReturnDate());
-        verify(bookService, times(1)).updateBookAvailability(sampleBook, 1);
+        verify(bookService, times(1)).increaseAvailableQuantity(1L);
     }
 
     @Test
     void returnLoan_ShouldThrowException_WhenNoActiveLoanFound() {
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> loanService.returnLoan("user-1", "book-1"));
+        when(loanRepository.findFirstByUserIdAndBookIdAndStatus(1L, 1L, LoanStatus.ACTIVE))
+                .thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> loanService.returnLoan(1L, 1L));
     }
 
     @Test
     void getAllLoans_ShouldReturnAllLoans() {
-        // Arrange
-        when(userService.getUserById(anyString())).thenReturn(Optional.of(sampleUser));
-        when(bookService.getBookById(anyString())).thenReturn(Optional.of(sampleBook));
-        when(bookService.isBookAvailable(any())).thenReturn(true);
-        loanService.createLoan("user-1", "book-1");
+        when(loanRepository.findAll()).thenReturn(Collections.singletonList(sampleLoanEntity));
+        when(loanEntityMapper.toModel(any(LoanEntity.class))).thenReturn(sampleLoan);
 
-        // Act
         List<Loan> allLoans = loanService.getAllLoans();
 
-        // Assert
         assertEquals(1, allLoans.size());
+        verify(loanRepository, times(1)).findAll();
     }
 }

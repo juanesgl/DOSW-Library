@@ -2,6 +2,9 @@ package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.validator.BookValidator;
+import edu.eci.dosw.tdd.persistence.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.mapper.BookEntityMapper;
+import edu.eci.dosw.tdd.persistence.repository.BookRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,7 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,107 +26,142 @@ class BookServiceTest {
     @Mock
     private BookValidator bookValidator;
 
+    @Mock
+    private BookRepository bookRepository;
+
+    @Mock
+    private BookEntityMapper bookEntityMapper;
+
     @InjectMocks
     private BookService bookService;
 
     private Book sampleBook;
+    private BookEntity sampleEntity;
 
     @BeforeEach
     void setUp() {
         sampleBook = Book.builder()
                 .title("Test Book")
                 .author("Test Author")
+                .totalQuantity(5)
+                .availableQuantity(5)
+                .build();
+        sampleEntity = BookEntity.builder()
+                .id(1L)
+                .title("Test Book")
+                .author("Test Author")
+                .totalQuantity(5)
+                .availableQuantity(5)
                 .build();
     }
 
     @Test
     void addBook_ShouldAddBookSuccessfully() {
-        // Arrange
         doNothing().when(bookValidator).validate(any(Book.class));
+        when(bookEntityMapper.toEntity(any(Book.class))).thenReturn(sampleEntity);
+        when(bookRepository.save(any(BookEntity.class))).thenReturn(sampleEntity);
+        when(bookEntityMapper.toModel(any(BookEntity.class))).thenReturn(
+                Book.builder().id(1L).title("Test Book").author("Test Author").totalQuantity(5).availableQuantity(5)
+                        .build());
 
-        // Act
-        Book addedBook = bookService.addBook(sampleBook, 5);
+        Book addedBook = bookService.addBook(sampleBook);
 
-        // Assert
         assertNotNull(addedBook.getId());
         assertEquals("Test Book", addedBook.getTitle());
+        assertEquals(5, addedBook.getTotalQuantity());
         verify(bookValidator, times(1)).validate(sampleBook);
-        assertEquals(5, bookService.getAllBooks().get(addedBook));
+        verify(bookRepository, times(1)).save(any(BookEntity.class));
     }
 
     @Test
-    void addBook_ShouldThrowException_WhenValidatorFails() {
-        // Arrange
-        doThrow(new IllegalArgumentException("El título y el autor del libro son obligatorios"))
-                .when(bookValidator).validate(any());
+    void addBook_ShouldThrowException_WhenTotalQuantityIsZero() {
+        doNothing().when(bookValidator).validate(any(Book.class));
+        Book invalidBook = Book.builder().title("Book").author("Author").totalQuantity(0).availableQuantity(0).build();
 
-        Book invalidBook = Book.builder().title("").build();
+        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(invalidBook));
+    }
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(invalidBook, 1));
-        verify(bookValidator, times(1)).validate(invalidBook);
-        assertFalse(bookService.getAllBooks().containsKey(invalidBook));
+    @Test
+    void addBook_ShouldThrowException_WhenAvailableQuantityIsNegative() {
+        doNothing().when(bookValidator).validate(any(Book.class));
+        Book invalidBook = Book.builder().title("Book").author("Author").totalQuantity(5).availableQuantity(-1).build();
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(invalidBook));
+    }
+
+    @Test
+    void addBook_ShouldThrowException_WhenAvailableExceedsTotal() {
+        doNothing().when(bookValidator).validate(any(Book.class));
+        Book invalidBook = Book.builder().title("Book").author("Author").totalQuantity(3).availableQuantity(5).build();
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(invalidBook));
     }
 
     @Test
     void getAllBooks_ShouldReturnInventory() {
-        // Arrange
-        doNothing().when(bookValidator).validate(any());
-        bookService.addBook(sampleBook, 10);
+        when(bookRepository.findAll()).thenReturn(Collections.singletonList(sampleEntity));
+        when(bookEntityMapper.toModel(any(BookEntity.class))).thenReturn(sampleBook);
 
-        // Act
-        Map<Book, Integer> inventory = bookService.getAllBooks();
+        List<Book> inventory = bookService.getAllBooks();
 
-        // Assert
         assertEquals(1, inventory.size());
-        assertEquals(10, inventory.get(sampleBook));
+        verify(bookRepository, times(1)).findAll();
     }
 
     @Test
     void getBookById_ShouldReturnBook_WhenExists() {
-        // Arrange
-        doNothing().when(bookValidator).validate(any());
-        Book addedBook = bookService.addBook(sampleBook, 1);
-        String bookId = addedBook.getId();
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
+        when(bookEntityMapper.toModel(sampleEntity)).thenReturn(sampleBook);
 
-        // Act
-        Optional<Book> foundBook = bookService.getBookById(bookId);
+        Optional<Book> foundBook = bookService.getBookById(1L);
 
-        // Assert
         assertTrue(foundBook.isPresent());
-        assertEquals(addedBook, foundBook.get());
+        assertEquals("Test Book", foundBook.get().getTitle());
     }
 
     @Test
     void isBookAvailable_ShouldReturnTrue_WhenQuantityIsGreaterThanZero() {
-        // Arrange
-        doNothing().when(bookValidator).validate(any());
-        bookService.addBook(sampleBook, 5);
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
 
-        // Act & Assert
-        assertTrue(bookService.isBookAvailable(sampleBook));
+        assertTrue(bookService.isBookAvailable(1L));
     }
 
     @Test
     void isBookAvailable_ShouldReturnFalse_WhenQuantityIsZero() {
-        // Arrange
-        doNothing().when(bookValidator).validate(any());
-        bookService.addBook(sampleBook, 0);
+        BookEntity zeroEntity = BookEntity.builder().id(2L).totalQuantity(5).availableQuantity(0).build();
+        when(bookRepository.findById(2L)).thenReturn(Optional.of(zeroEntity));
 
-        // Act & Assert
-        assertFalse(bookService.isBookAvailable(sampleBook));
+        assertFalse(bookService.isBookAvailable(2L));
     }
 
     @Test
-    void updateBookAvailability_ShouldChangeQuantity() {
-        // Arrange
-        doNothing().when(bookValidator).validate(any());
-        bookService.addBook(sampleBook, 5);
+    void decreaseAvailableQuantity_ShouldDecrease() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
+        when(bookRepository.save(any(BookEntity.class))).thenReturn(sampleEntity);
 
-        // Act
-        bookService.updateBookAvailability(sampleBook, -2);
+        bookService.decreaseAvailableQuantity(1L);
 
-        // Assert
-        assertEquals(3, bookService.getAllBooks().get(sampleBook));
+        assertEquals(4, sampleEntity.getAvailableQuantity());
+        verify(bookRepository, times(1)).save(sampleEntity);
+    }
+
+    @Test
+    void increaseAvailableQuantity_ShouldIncrease() {
+        BookEntity entity = BookEntity.builder().id(1L).totalQuantity(5).availableQuantity(3).build();
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(entity));
+        when(bookRepository.save(any(BookEntity.class))).thenReturn(entity);
+
+        bookService.increaseAvailableQuantity(1L);
+
+        assertEquals(4, entity.getAvailableQuantity());
+        verify(bookRepository, times(1)).save(entity);
+    }
+
+    @Test
+    void increaseAvailableQuantity_ShouldThrow_WhenAlreadyAtMax() {
+        BookEntity entity = BookEntity.builder().id(1L).totalQuantity(5).availableQuantity(5).build();
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(entity));
+
+        assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity(1L));
     }
 }

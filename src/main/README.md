@@ -51,3 +51,17 @@ garantizando la integridad y validez de las operaciones.
 _Estructura detallada de las entidades, servicios, controladores y sus relaciones._
 
 > ![Diagrama de Clases](../../docs/uml/clases.png)
+
+--- 
+
+### 4. Módelo entidad - relación 
+
+> ![Diagrama Módelo entidad](../../docs/parte2/3NF.png)
+
+El diagrama muestra una arquitectura de base de datos clara y 
+bien normalizada para gestionar una biblioteca. La relación muchos 
+a muchos entre USERS y BOOKS, usando la tabla LOANS, permite registrar 
+cada préstamo y mantener la integridad de los datos. 
+Además, el control entre total_quantity y available_quantity ayuda a manejar el 
+inventario en tiempo real sin inconsistencias. 
+En general, es un modelo simple pero sólido para controlar libros y usuarios.

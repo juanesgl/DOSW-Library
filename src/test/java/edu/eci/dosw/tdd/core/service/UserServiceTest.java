@@ -2,6 +2,9 @@ package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.validator.UserValidator;
+import edu.eci.dosw.tdd.persistence.entity.UserEntity;
+import edu.eci.dosw.tdd.persistence.mapper.UserEntityMapper;
+import edu.eci.dosw.tdd.persistence.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,82 +26,81 @@ class UserServiceTest {
     @Mock
     private UserValidator userValidator;
 
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private UserEntityMapper userEntityMapper;
+
     @InjectMocks
     private UserService userService;
 
     private User sampleUser;
+    private UserEntity sampleEntity;
 
     @BeforeEach
     void setUp() {
-        sampleUser = User.builder()
-                .name("Test User")
+        sampleUser = User.builder().name("Test User").username("testuser").password("pass").role("USER").build();
+        sampleEntity = UserEntity.builder().id(1L).name("Test User").username("testuser").password("pass").role("USER")
                 .build();
     }
 
     @Test
     void registerUser_ShouldRegisterUserSuccessfully() {
-        // Arrange
         doNothing().when(userValidator).validate(any(User.class));
+        when(userEntityMapper.toEntity(any(User.class))).thenReturn(sampleEntity);
+        when(userRepository.save(any(UserEntity.class))).thenReturn(sampleEntity);
+        when(userEntityMapper.toModel(any(UserEntity.class))).thenReturn(
+                User.builder().id(1L).name("Test User").username("testuser").role("USER").build());
 
-        // Act
         User registeredUser = userService.registerUser(sampleUser);
 
-        // Assert
         assertNotNull(registeredUser.getId());
         assertEquals("Test User", registeredUser.getName());
         verify(userValidator, times(1)).validate(sampleUser);
-        assertTrue(userService.getAllUsers().contains(registeredUser));
+        verify(userRepository, times(1)).save(any(UserEntity.class));
     }
 
     @Test
     void registerUser_ShouldThrowException_WhenValidatorFails() {
-        // Arrange
         doThrow(new IllegalArgumentException("El nombre del usuario no puede estar vacío"))
                 .when(userValidator).validate(any());
 
         User invalidUser = User.builder().name("").build();
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> userService.registerUser(invalidUser));
         verify(userValidator, times(1)).validate(invalidUser);
-        assertFalse(userService.getAllUsers().contains(invalidUser));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
     void getAllUsers_ShouldReturnListOfUsers() {
-        // Arrange
-        doNothing().when(userValidator).validate(any());
-        userService.registerUser(sampleUser);
+        when(userRepository.findAll()).thenReturn(Collections.singletonList(sampleEntity));
+        when(userEntityMapper.toModel(any(UserEntity.class))).thenReturn(sampleUser);
 
-        // Act
         List<User> users = userService.getAllUsers();
 
-        // Assert
         assertEquals(1, users.size());
-        assertEquals(sampleUser, users.get(0));
+        verify(userRepository, times(1)).findAll();
     }
 
     @Test
     void getUserById_ShouldReturnUser_WhenUserExists() {
-        // Arrange
-        doNothing().when(userValidator).validate(any());
-        User registeredUser = userService.registerUser(sampleUser);
-        String userId = registeredUser.getId();
+        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
+        when(userEntityMapper.toModel(sampleEntity)).thenReturn(sampleUser);
 
-        // Act
-        Optional<User> foundUser = userService.getUserById(userId);
+        Optional<User> foundUser = userService.getUserById(1L);
 
-        // Assert
         assertTrue(foundUser.isPresent());
-        assertEquals(registeredUser, foundUser.get());
+        assertEquals("Test User", foundUser.get().getName());
     }
 
     @Test
     void getUserById_ShouldReturnEmpty_WhenUserDoesNotExist() {
-        // Act
-        Optional<User> foundUser = userService.getUserById("non-existent-id");
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Assert
+        Optional<User> foundUser = userService.getUserById(99L);
+
         assertFalse(foundUser.isPresent());
     }
 }
