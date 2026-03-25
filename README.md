@@ -46,34 +46,6 @@ La aplicación estará disponible en `http://localhost:8080`.
 ## 📖 Documentación de la API
 
 Una vez iniciada la aplicación, puedes acceder a la documentación interactiva en:
-
-- **DIAGRAM VIEW**
-```mermaiderDiagram
-    USERS {
-        Long id PK
-        String name
-        String username
-        String password
-        String role
-    }
-    BOOKS {
-        Long id PK
-        String title
-        String author
-        Integer total_quantity
-        Integer available_quantity
-    }
-    LOANS {
-        Long id PK
-        Long book_id FK
-        Long user_id FK
-        Date loan_date
-        Date return_date
-        String status
-    }
-    USERS ||--o{ LOANS : "has"
-    BOOKS ||--o{ LOANS : "is part of"
-```
 - **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
 - **OpenAPI JSON**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
 
