@@ -1,12 +1,17 @@
 package edu.eci.dosw.tdd.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.eci.dosw.tdd.config.jwt.JwtService;
+import edu.eci.dosw.tdd.config.security.CustomUserDetailsService;
+import edu.eci.dosw.tdd.config.security.JwtAccessDeniedHandler;
+import edu.eci.dosw.tdd.config.security.JwtAuthenticationEntryPoint;
 import edu.eci.dosw.tdd.controller.dto.UserDTO;
 import edu.eci.dosw.tdd.controller.mapper.UserMapper;
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.core.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
     @Autowired
@@ -32,6 +38,19 @@ class UserControllerTest {
 
     @MockitoBean
     private UserMapper userMapper;
+
+    // Security infrastructure mocks
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private CustomUserDetailsService customUserDetailsService;
+
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @MockitoBean
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Autowired
     private ObjectMapper objectMapper;

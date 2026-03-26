@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +33,9 @@ class UserServiceTest {
     @Mock
     private UserEntityMapper userEntityMapper;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserService userService;
 
@@ -41,13 +45,15 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         sampleUser = User.builder().name("Test User").username("testuser").password("pass").role("USER").build();
-        sampleEntity = UserEntity.builder().id(1L).name("Test User").username("testuser").password("pass").role("USER")
+        sampleEntity = UserEntity.builder().id(1L).name("Test User").username("testuser").password("encodedpass")
+                .role("USER")
                 .build();
     }
 
     @Test
     void registerUser_ShouldRegisterUserSuccessfully() {
         doNothing().when(userValidator).validate(any(User.class));
+        when(passwordEncoder.encode("pass")).thenReturn("encodedpass");
         when(userEntityMapper.toEntity(any(User.class))).thenReturn(sampleEntity);
         when(userRepository.save(any(UserEntity.class))).thenReturn(sampleEntity);
         when(userEntityMapper.toModel(any(UserEntity.class))).thenReturn(
@@ -58,6 +64,7 @@ class UserServiceTest {
         assertNotNull(registeredUser.getId());
         assertEquals("Test User", registeredUser.getName());
         verify(userValidator, times(1)).validate(sampleUser);
+        verify(passwordEncoder, times(1)).encode("pass");
         verify(userRepository, times(1)).save(any(UserEntity.class));
     }
 

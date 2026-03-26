@@ -1,5 +1,9 @@
 package edu.eci.dosw.tdd.controller;
 
+import edu.eci.dosw.tdd.config.jwt.JwtService;
+import edu.eci.dosw.tdd.config.security.CustomUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.validation.Valid;
 import edu.eci.dosw.tdd.controller.dto.UserDTO;
 import edu.eci.dosw.tdd.controller.mapper.UserMapper;
 import edu.eci.dosw.tdd.core.model.User;
@@ -9,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,16 +27,27 @@ public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @PostMapping
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @Operation(summary = "Crear un nuevo usuario", description = "Registra un usuario en el sistema")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserDTO userDTO) {
         User user = userMapper.toEntity(userDTO);
         User createdUser = userService.registerUser(user);
-        return new ResponseEntity<>(userMapper.toDto(createdUser), HttpStatus.CREATED);
+
+        UserDTO responseDto = userMapper.toDto(createdUser);
+
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(createdUser.getUsername());
+        String token = jwtService.generateToken(userDetails, createdUser.getId());
+        responseDto.setToken(token);
+
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @Operation(summary = "Obtener todos los usuarios", description = "Devuelve la lista de usuarios registrados")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserDTO> users = userService.getAllUsers().stream()
@@ -41,6 +57,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('LIBRARIAN')")
     @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario por su identificador único")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id)

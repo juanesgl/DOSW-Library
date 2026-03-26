@@ -160,3 +160,7 @@ $RECYCLE.BIN/
 .history
 .ionide
 postgres_data/
+/secrets/
+*.p12
+*.jks
+*.keystore

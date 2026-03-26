@@ -1,11 +1,16 @@
 package edu.eci.dosw.tdd.controller;
 
+import edu.eci.dosw.tdd.config.jwt.JwtService;
+import edu.eci.dosw.tdd.config.security.CustomUserDetailsService;
+import edu.eci.dosw.tdd.config.security.JwtAccessDeniedHandler;
+import edu.eci.dosw.tdd.config.security.JwtAuthenticationEntryPoint;
 import edu.eci.dosw.tdd.controller.dto.LoanDTO;
 import edu.eci.dosw.tdd.controller.mapper.LoanMapper;
 import edu.eci.dosw.tdd.core.model.Loan;
 import edu.eci.dosw.tdd.core.service.LoanService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(LoanController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class LoanControllerTest {
 
     @Autowired
@@ -27,6 +33,19 @@ class LoanControllerTest {
 
     @MockitoBean
     private LoanMapper loanMapper;
+
+    // Security infrastructure mocks
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private CustomUserDetailsService customUserDetailsService;
+
+    @MockitoBean
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+    @MockitoBean
+    private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     @Test
     void createLoan_ShouldReturnCreatedLoan() throws Exception {

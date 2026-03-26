@@ -1,12 +1,17 @@
 package edu.eci.dosw.tdd.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.eci.dosw.tdd.config.jwt.JwtService;
+import edu.eci.dosw.tdd.config.security.CustomUserDetailsService;
+import edu.eci.dosw.tdd.config.security.JwtAccessDeniedHandler;
+import edu.eci.dosw.tdd.config.security.JwtAuthenticationEntryPoint;
 import edu.eci.dosw.tdd.controller.dto.BookDTO;
 import edu.eci.dosw.tdd.controller.mapper.BookMapper;
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.core.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,6 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BookController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class BookControllerTest {
 
         @Autowired
@@ -32,6 +38,20 @@ class BookControllerTest {
 
         @MockitoBean
         private BookMapper bookMapper;
+
+        // Security infrastructure mocks (required by SecurityConfig &
+        // JwtAuthenticationFilter)
+        @MockitoBean
+        private JwtService jwtService;
+
+        @MockitoBean
+        private CustomUserDetailsService customUserDetailsService;
+
+        @MockitoBean
+        private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+        @MockitoBean
+        private JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
         @Autowired
         private ObjectMapper objectMapper;

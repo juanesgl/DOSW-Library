@@ -89,4 +89,10 @@ public class LoanService {
                 .map(loanEntityMapper::toModel)
                 .collect(Collectors.toList());
     }
+
+    public List<Loan> getLoansByUserId(Long userId) {
+        return loanRepository.findByUserId(userId).stream()
+                .map(loanEntityMapper::toModel)
+                .collect(Collectors.toList());
+    }
 }
