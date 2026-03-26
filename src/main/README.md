@@ -48,9 +48,90 @@ garantizando la integridad y validez de las operaciones.
 ---
 
 ### 3. Diagrama de Clases
-_Estructura detallada de las entidades, servicios, controladores y sus relaciones._
+_Estructura detallada de las entidades, servicios, controladores y sus relaciones clave._
 
-> ![Diagrama de Clases](../../docs/uml/clases.png)
+```mermaid
+classDiagram
+    class User {
+        - Long id
+        - String name
+        - String username
+        - String password
+        - String role
+    }
+
+    class Book {
+        - Long id
+        - String title
+        - String author
+        - Integer totalQuantity
+        - Integer availableQuantity
+    }
+
+    class Loan {
+        - Long id
+        - Long userId
+        - Long bookId
+        - LocalDate loanDate
+        - LocalDate returnDate
+        - LoanStatus status
+    }
+
+    class LoanStatus {
+        <<enumeration>>
+        ACTIVE
+        RETURNED
+    }
+    
+    Loan --> LoanStatus
+
+    class UserController {
+        + registerUser(UserDTO) UserDTO
+        + getAllUsers() List~UserDTO~
+    }
+
+    class BookController {
+        + addBook(BookDTO) BookDTO
+        + getAllBooks() List~BookDTO~
+    }
+
+    class LoanController {
+        + createLoan(Long, Long) LoanDTO
+        + returnLoan(Long, Long) LoanDTO
+        + getMyLoans() List~LoanDTO~
+    }
+    
+    class AuthController {
+        + login(LoginRequest) LoginResponse
+    }
+
+    class UserService {
+        + registerUser(User) User
+    }
+    class BookService {
+        + addBook(Book) Book
+    }
+    class LoanService {
+        + createLoan(userId, bookId) Loan
+        + returnLoan(userId, bookId) Loan
+    }
+
+    class UserRepository { <<interface>> }
+    class BookRepository { <<interface>> }
+    class LoanRepository { <<interface>> }
+
+    UserController ..> UserService : usa
+    BookController ..> BookService : usa
+    LoanController ..> LoanService : usa
+    
+    UserService ..> UserRepository : inyecta
+    BookService ..> BookRepository : inyecta
+    LoanService ..> LoanRepository : inyecta
+    
+    UserService ..> User
+    BookService ..> Book
+    LoanService ..> Loan
+```
 
 --- 
 
