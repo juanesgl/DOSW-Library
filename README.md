@@ -32,6 +32,8 @@ Sistema de gestión de biblioteca desarrollado con **Spring Boot**, diseñado pa
 - **SpringDoc OpenAPI (Swagger)**: Documentación de la API segura.
 - **JaCoCo**: Reporte de cobertura de código.
 - **SonarQube**: Análisis estático
+- **PostgreSQL**: Base de datos relacional.
+- **Docker**: Contenedor para trabajo en Windows y Linux.
 
 ## 📋 Requisitos Previos
 
@@ -87,6 +89,10 @@ Después de ejecutar las pruebas, el reporte se genera en:
 - **Controllers**: Pruebas de integración web con `MockMvc`.
 - **Security Integration Tests**: Verificación estricta de filtros JWT, respuestas `401 Unauthorized` por tokens faltantes/falsos y `403 Forbidden` por restricción de roles.
 - **Mappers & Validators**: Validación de datos y transformación de DTOs.
+
+### Videos demostrativos: 
+
+Ver los videos para cada parte de la biblioteca [Videos explicativos](docs/videos.md)
 
 ## 📁 Estructura del Proyecto
 
