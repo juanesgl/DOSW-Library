@@ -27,31 +27,67 @@ organización.
 
 ### 2. Diagrama Específico de Componentes
 
-> ![Componente Específico](../../docs/uml/componentespecifico.png)
+```mermaid
+flowchart LR
+    %% Definición de Controladores (API)
+    subgraph Web [Capa Web / API]
+        direction TB
+        BC[BookController]
+        UC[UserController]
+        LC[LoanController]
+        AC[AuthController]
+    end
 
-El sistema backend se organiza en controladores, 
-servicios y componentes de apoyo. Los controladores 
-actúan como punto de entrada para las peticiones del 
-Frontend: BookController gestiona solicitudes relacionadas 
-con el catálogo de libros, UserController maneja las operaciones de 
-los usuarios y LoanController procesa las solicitudes de préstamos. 
-Estos controladores delegan el procesamiento a los servicios, que contienen 
-la lógica de negocio del sistema: BookService administra las operaciones sobre 
-libros, UserService gestiona la información y estado de los usuarios, y 
-LoanService se encarga del proceso de préstamos y devoluciones. 
-Para completar procesos más complejos, los servicios colaboran entre sí; por ejemplo, 
-LoanService consulta a UserService para verificar al usuario y a BookService para confirmar 
-la disponibilidad de un libro. Finalmente, LoanService utiliza un Validator 
-para asegurar que todas las reglas del sistema se cumplan antes de registrar un préstamo, 
-garantizando la integridad y validez de las operaciones.
+    %% Definición de Servicios (Lógica de Negocio)
+    subgraph Core [Capa de Lógica de Negocio]
+        direction TB
+        BS[BookService]
+        US[UserService]
+        LS[LoanService]
+        JS[JwtService]
+    end
+
+    %% Apoyo y Reglas
+    subgraph Utils [Componentes de Apoyo]
+        V[Validator]
+    end
+
+    %% Relaciones Controlador -> Servicio
+    BC == Delega ==> BS
+    UC == Delega ==> US
+    LC == Delega ==> LS
+    AC == Delega ==> JS
+
+    %% Relaciones internas entre servicios (El LoanService necesita de los otros dos)
+    LS -. "Verifica stock" .-> BS
+    LS -. "Verifica estado" .-> US
+
+    %% Dependencia de Validadores
+    LS -. "Aplica Reglas" .-> V
+```
+
+Este diagrama ilustra una arquitectura de software multicapa diseñada bajo
+el principio de Separación de Responsabilidades (SoC), donde la Capa Web 
+actúa como el punto de entrada mediante controladores que gestionan las 
+peticiones externas. Estos controladores se comunican con la Capa de 
+Lógica de Negocio a través de interfaces de servicio (representadas 
+por los conectores circulares), lo que garantiza un desacoplamiento 
+que facilita el mantenimiento y la escalabilidad del sistema.
+En el núcleo, los servicios procesan las reglas de negocio,
+destacando el componente LoanService como un eje central que 
+interactúa con BookService y UserService para verificar la
+disponibilidad y el estado de los usuarios antes de ejecutar 
+un préstamo. Finalmente, el flujo se apoya en un Validator 
+transversal para asegurar que todas las operaciones cumplan 
+con las reglas de integridad del sistema antes de ser procesadas.
 
 ---
 
 ### 3. Diagrama de Clases
-_Estructura detallada de las entidades, servicios, controladores y sus relaciones clave._
 
 ```mermaid
 classDiagram
+    %% Modelos / Entidades de Dominio
     class User {
         - Long id
         - String name
@@ -83,8 +119,9 @@ classDiagram
         RETURNED
     }
     
-    Loan --> LoanStatus
+    Loan --> "1" LoanStatus : tiene
 
+    %% Controladores REST
     class UserController {
         + registerUser(UserDTO) UserDTO
         + getAllUsers() List~UserDTO~
@@ -100,38 +137,78 @@ classDiagram
         + returnLoan(Long, Long) LoanDTO
         + getMyLoans() List~LoanDTO~
     }
-    
+
     class AuthController {
         + login(LoginRequest) LoginResponse
     }
 
+    %% Lógica de Negocio
     class UserService {
         + registerUser(User) User
+        + findByUsername(String) User
     }
+
     class BookService {
         + addBook(Book) Book
+        + getBookById(Long) Book
     }
+
     class LoanService {
-        + createLoan(userId, bookId) Loan
-        + returnLoan(userId, bookId) Loan
+        + createLoan(Long, Long) Loan
+        + returnLoan(Long, Long) Loan
+        + getLoansByUserId(Long) List~Loan~
+    }
+    
+    class JwtService {
+        + generateToken(UserDetails) String
+        + extractUsername(String) String
+        + isTokenValid(String, UserDetails) boolean
     }
 
-    class UserRepository { <<interface>> }
-    class BookRepository { <<interface>> }
-    class LoanRepository { <<interface>> }
+    %% Capa de Datos (JPA)
+    class UserRepository {
+        <<interface>>
+        + findByUsername(String) Optional~UserEntity~
+    }
+    
+    class BookRepository {
+        <<interface>>
+    }
 
-    UserController ..> UserService : usa
-    BookController ..> BookService : usa
-    LoanController ..> LoanService : usa
+    class LoanRepository {
+        <<interface>>
+        + findByUserId(Long) List~LoanEntity~
+        + findByBookIdAndStatus(Long, String) List~LoanEntity~
+    }
+
+    %% Relaciones estructurales (Dependencias)
+    UserController ..> UserService : delega
+    BookController ..> BookService : delega
+    LoanController ..> LoanService : delega
+    AuthController ..> JwtService : delega
     
-    UserService ..> UserRepository : inyecta
-    BookService ..> BookRepository : inyecta
-    LoanService ..> LoanRepository : inyecta
+    UserService ..> UserRepository : persiste
+    BookService ..> BookRepository : persiste
+    LoanService ..> LoanRepository : persiste
     
-    UserService ..> User
-    BookService ..> Book
-    LoanService ..> Loan
+    LoanService ..> UserService : requiere
+    LoanService ..> BookService : requiere
+    
+    UserService ..> User : gestiona
+    BookService ..> Book : gestiona
+    LoanService ..> Loan : gestiona
 ```
+
+Este sistema sigue una arquitectura de tres capas que separa las 
+responsabilidades de forma clara: los Controladores gestionan las 
+peticiones externas y la seguridad mediante JwtService, los Servicios
+ejecutan la lógica de negocio y validaciones entre componentes, y los 
+Repositorios se encargan de la persistencia de datos. 
+El modelo de dominio, compuesto por User, Book y Loan, 
+define las reglas e integridad de la información, 
+permitiendo que el LoanService actúe como orquestador 
+principal al requerir datos de usuarios y libros para 
+procesar préstamos de manera segura y eficiente.
 
 --- 
 
