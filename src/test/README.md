@@ -13,6 +13,20 @@ _Análisis de cobertura nativo del IDE para ejecuciones rápidas durante el desa
 
 > ![Pruebas en IntelliJ 2](../../docs/tests/intecoverage.png)
 
+
+Las imágenes muestran un reporte de Code Coverage en IntelliJ IDEA, 
+revelando que el proyecto tiene una salud técnica sólida con un 88% de 
+pruebas exitosas (88 de 88 pasadas). A nivel de métricas, destaca una 
+cobertura de ramas (Branch %) del 88% global, con puntajes perfectos 
+del 100% en controladores, lógica central y persistencia; esto indica 
+que casi todos los caminos lógicos y decisiones condicionales (if/else) 
+están siendo validados. El único punto de atención es el paquete de 
+configuración, que presenta un 25% de Branch Coverage, sugiriendo que 
+existen flujos de configuración excepcionales que aún no han sido 
+ejercitados por la suite de pruebas.
+
+
+
 ---
 
 ### 🛡️ JaCoCo 
@@ -20,6 +34,18 @@ _Reporte detallado generado mediante Maven para la integración continua y valid
 
 
 > ![Reporte Jacoco](../../docs/tests/jacoco.png)
+
+
+El reporte de JaCoCo confirma un estado saludable del proyecto 
+con una cobertura global de instrucciones del 82% y de ramas del 86%. 
+Los componentes críticos de lógica de negocio, 
+validadores y persistencia alcanzan un impecable 100% de cobertura 
+de ramas, lo que garantiza que los flujos principales están totalmente 
+protegidos. Al igual que en el análisis anterior, las áreas de mejora 
+se concentran en los paquetes de configuración (jwt y security), 
+donde la baja cobertura de instrucciones sugiere la presencia de 
+código de infraestructura que no requiere pruebas unitarias exhaustivas, 
+manteniendo el foco de calidad en la lógica funcional del sistema.
 
 ---
 
@@ -29,27 +55,21 @@ _Análisis estático de código, detección de bugs, vulnerabilidades y deuda t�
 
 > ![Reporte Jacoco](../../docs/tests/sonarcube.png)
  
-> ![Reporte Jacoco](../../docs/tests/sonarcube2.png)
 
 > ![Reporte Jacoco](../../docs/tests/sonarcubesug.png)
 
+El análisis de SonarQube muestra que, aunque el proyecto tiene 
+métricas excelentes en seguridad, confiabilidad y cobertura (83.6%), 
+el estado general es "Failed" debido a problemas de mantenibilidad. 
+Se identificaron 8 problemas técnicos que suman un esfuerzo estimado 
+de 46 minutos para corregirse. Entre las sugerencias clave destacan 
+la necesidad de eliminar código duplicado 
+(como el literal "LIBRARIAN" repetido 8 veces) mediante constantes, y 
+la actualización de sintaxis a Java 16+ reemplazando Collectors.toList()
+por el método más moderno .toList(). Estas observaciones indican que, 
+si bien el código es funcional y seguro, requiere una refactorización 
+para cumplir con los estándares de limpieza y modernización que exige 
+el Quality Gate.
 
-### Análisis de Calidad - SonarQube
-El análisis estático realizado con SonarQube arroja resultados sobresalientes para el sistema DOSW-Library, destacando la solidez de la lógica implementada y la efectividad de la suite de pruebas.
 
-1. Métricas Principales
-   Coverage (91.9%): Este es el punto más fuerte. Se logró cubrir la gran mayoría de las líneas de código , superando con creces el mínimo estándar. Esto garantiza que casi toda la lógica de préstamos y validaciones ha sido verificada.
 
-Duplications (0.0%): El código es limpio y no presenta redundancias. Cada componente tiene una responsabilidad única.
-
-Reliability & Security (Rating A): Se cuenta con 0 vulnerabilidades y 0 bugs abiertos, lo que indica que el sistema es seguro y confiable.
-
-2. Mantenibilidad y Deuda Técnica
-   SonarQube identificó 7 "Open Issues" relacionados con la mantenibilidad, con un esfuerzo estimado de solución de solo 19 minutos:
-
-Sugerencia de Refactorización en Streams: En los controladores (BookController, LoanController, UserController), Sonar sugiere reemplazar .collect(Collectors.toList()) por el método más moderno .toList() (disponible desde Java 16). Esto hace el código más legible y genera listas inmutables por defecto.
-
-Limpieza de Código: Se detectó un import no utilizado en LoanControllerTest (ObjectMapper). Eliminarlo ayuda a mantener el proyecto limpio y evita dependencias innecesarias en las pruebas.
-
-3. Conclusión de Calidad
-   El proyecto ha superado el Quality Gate, demostrando que la refactorización hacia una arquitectura basada en servicios y DTOs, junto con la implementación de pruebas unitarias exhaustivas, resultó en un software mantenible, seguro y con una cobertura excepcional.
