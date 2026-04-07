@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class LoanMapperTest {
 
-    private final LoanMapper mapper = new LoanMapper();
+    private final LoanMapper mapper = org.mapstruct.factory.Mappers.getMapper(LoanMapper.class);
 
     @Test
     void toDto_ShouldMapCorrectly() {

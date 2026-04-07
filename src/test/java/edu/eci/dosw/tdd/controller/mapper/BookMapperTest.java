@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BookMapperTest {
 
-    private final BookMapper mapper = new BookMapper();
+    private final BookMapper mapper = org.mapstruct.factory.Mappers.getMapper(BookMapper.class);
 
     @Test
     void toEntity_ShouldMapCorrectly() {

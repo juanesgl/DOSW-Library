@@ -1,12 +1,14 @@
 package edu.eci.dosw.tdd.persistence.mapper;
 
 import edu.eci.dosw.tdd.core.model.*;
-import edu.eci.dosw.tdd.persistence.entity.BookEntity;
-import edu.eci.dosw.tdd.persistence.entity.LoanEntity;
-import edu.eci.dosw.tdd.persistence.entity.UserEntity;
+import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.relational.entity.LoanEntity;
+import edu.eci.dosw.tdd.persistence.relational.entity.UserEntity;
+import edu.eci.dosw.tdd.persistence.relational.mapper.BookEntityMapper;
+import edu.eci.dosw.tdd.persistence.relational.mapper.LoanEntityMapper;
+import edu.eci.dosw.tdd.persistence.relational.mapper.UserEntityMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -15,6 +17,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
 
 @ExtendWith(MockitoExtension.class)
 class LoanEntityMapperTest {
@@ -25,8 +28,14 @@ class LoanEntityMapperTest {
     @Mock
     private BookEntityMapper bookEntityMapper;
 
-    @InjectMocks
     private LoanEntityMapper loanEntityMapper;
+
+    @BeforeEach
+    void setUp() {
+        loanEntityMapper = org.mapstruct.factory.Mappers.getMapper(LoanEntityMapper.class);
+        org.springframework.test.util.ReflectionTestUtils.setField(loanEntityMapper, "userEntityMapper", userEntityMapper);
+        org.springframework.test.util.ReflectionTestUtils.setField(loanEntityMapper, "bookEntityMapper", bookEntityMapper);
+    }
 
     @Test
     void toModel_ShouldMapAllFields() {

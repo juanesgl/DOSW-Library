@@ -1,7 +1,8 @@
 package edu.eci.dosw.tdd.persistence.mapper;
 
 import edu.eci.dosw.tdd.core.model.Book;
-import edu.eci.dosw.tdd.persistence.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
+import edu.eci.dosw.tdd.persistence.relational.mapper.BookEntityMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,11 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class BookEntityMapperTest {
 
-    private BookEntityMapper mapper;
+    private BookEntityMapper mapper = org.mapstruct.factory.Mappers.getMapper(BookEntityMapper.class);
 
     @BeforeEach
     void setUp() {
-        mapper = new BookEntityMapper();
     }
 
     @Test

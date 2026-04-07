@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserMapperTest {
 
-    private final UserMapper mapper = new UserMapper();
+    private final UserMapper mapper = org.mapstruct.factory.Mappers.getMapper(UserMapper.class);
 
     @Test
     void toEntity_ShouldMapCorrectly() {
