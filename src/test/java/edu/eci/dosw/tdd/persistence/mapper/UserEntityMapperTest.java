@@ -1,7 +1,8 @@
 package edu.eci.dosw.tdd.persistence.mapper;
 
 import edu.eci.dosw.tdd.core.model.User;
-import edu.eci.dosw.tdd.persistence.entity.UserEntity;
+import edu.eci.dosw.tdd.persistence.relational.entity.UserEntity;
+import edu.eci.dosw.tdd.persistence.relational.mapper.UserEntityMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,11 +10,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class UserEntityMapperTest {
 
-    private UserEntityMapper mapper;
+    private UserEntityMapper mapper = org.mapstruct.factory.Mappers.getMapper(UserEntityMapper.class);
 
     @BeforeEach
     void setUp() {
-        mapper = new UserEntityMapper();
     }
 
     @Test
