@@ -1,4 +1,4 @@
-package edu.eci.dosw.tdd.persistence.mapper;
+package edu.eci.dosw.tdd.persistence.relational.mapper;
 
 import edu.eci.dosw.tdd.core.model.User;
 import edu.eci.dosw.tdd.persistence.relational.entity.UserEntity;
@@ -29,7 +29,7 @@ class UserEntityMapperTest {
         User model = mapper.toModel(entity);
 
         assertNotNull(model);
-        assertEquals(1L, model.getId());
+        assertEquals("1", model.getId());
         assertEquals("Juan", model.getName());
         assertEquals("juanuser", model.getUsername());
         assertEquals("secret123", model.getPassword());
@@ -44,7 +44,7 @@ class UserEntityMapperTest {
     @Test
     void toEntity_ShouldMapAllFields() {
         User model = User.builder()
-                .id(1L)
+                .id("1")
                 .name("Juan")
                 .username("juanuser")
                 .password("secret123")

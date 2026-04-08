@@ -1,4 +1,4 @@
-package edu.eci.dosw.tdd.persistence.mapper;
+package edu.eci.dosw.tdd.persistence.relational.mapper;
 
 import edu.eci.dosw.tdd.core.model.*;
 import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
@@ -53,8 +53,8 @@ class LoanEntityMapperTest {
                 .returnDate(returnDate)
                 .build();
 
-        User mappedUser = User.builder().id(1L).name("Test User").build();
-        Book mappedBook = Book.builder().id(2L).title("Test Book").build();
+        User mappedUser = User.builder().id("1").name("Test User").build();
+        Book mappedBook = Book.builder().id("2").title("Test Book").build();
 
         when(userEntityMapper.toModel(userEntity)).thenReturn(mappedUser);
         when(bookEntityMapper.toModel(bookEntity)).thenReturn(mappedBook);
@@ -62,7 +62,7 @@ class LoanEntityMapperTest {
         Loan model = loanEntityMapper.toModel(entity);
 
         assertNotNull(model);
-        assertEquals(10L, model.getId());
+        assertEquals("10", model.getId());
         assertEquals(mappedUser, model.getUser());
         assertEquals(mappedBook, model.getBook());
         assertEquals(loanDate, model.getLoanDate());
@@ -77,13 +77,13 @@ class LoanEntityMapperTest {
 
     @Test
     void toEntity_ShouldMapAllFields() {
-        User user = User.builder().id(1L).name("Test User").build();
-        Book book = Book.builder().id(2L).title("Test Book").build();
+        User user = User.builder().id("1").name("Test User").build();
+        Book book = Book.builder().id("2").title("Test Book").build();
         LocalDate loanDate = LocalDate.of(2026, 3, 1);
         LocalDate returnDate = LocalDate.of(2026, 3, 15);
 
         Loan model = Loan.builder()
-                .id(10L)
+                .id("10")
                 .user(user)
                 .book(book)
                 .loanDate(loanDate)

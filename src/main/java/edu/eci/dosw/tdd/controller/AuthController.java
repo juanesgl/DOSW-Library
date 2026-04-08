@@ -38,7 +38,7 @@ public class AuthController {
                         loginRequest.getPassword()));
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        Long userId = customUserDetailsService.getUserIdByUsername(userDetails.getUsername());
+        String userId = customUserDetailsService.getUserIdByUsername(userDetails.getUsername());
         String token = jwtService.generateToken(userDetails, userId);
 
         return ResponseEntity.ok(LoginResponse.builder().token(token).build());

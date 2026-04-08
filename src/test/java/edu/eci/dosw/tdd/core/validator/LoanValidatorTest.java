@@ -12,14 +12,14 @@ class LoanValidatorTest {
 
     @Test
     void validateLoanCreation_ShouldDoNothing_WhenInputsAreValid() {
-        User user = User.builder().id(1L).build();
-        Book book = Book.builder().id(101L).build();
+        User user = User.builder().id("1").build();
+        Book book = Book.builder().id("101").build();
         assertDoesNotThrow(() -> validator.validateLoanCreation(user, book));
     }
 
     @Test
     void validateLoanCreation_ShouldThrowException_WhenUserIsNull() {
-        Book book = Book.builder().id(101L).build();
+        Book book = Book.builder().id("101").build();
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> validator.validateLoanCreation(null, book));
         assertEquals("El usuario es requerido para el préstamo", exception.getMessage());
@@ -27,7 +27,7 @@ class LoanValidatorTest {
 
     @Test
     void validateLoanCreation_ShouldThrowException_WhenBookIsNull() {
-        User user = User.builder().id(1L).build();
+        User user = User.builder().id("1").build();
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> validator.validateLoanCreation(user, null));
         assertEquals("El libro es requerido para el préstamo", exception.getMessage());

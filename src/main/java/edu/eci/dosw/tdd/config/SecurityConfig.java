@@ -47,7 +47,7 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/books", "/books/**").hasAnyRole("USER", "LIBRARIAN")
                         .requestMatchers(HttpMethod.POST, "/books").hasRole("LIBRARIAN")
-                        .requestMatchers(HttpMethod.POST, "/users").hasRole("LIBRARIAN")
+                        .requestMatchers(HttpMethod.POST, "/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users", "/users/**").hasRole("LIBRARIAN")
                         .requestMatchers(HttpMethod.POST, "/loans").hasAnyRole("USER", "LIBRARIAN")
                         .requestMatchers(HttpMethod.PUT, "/loans/return").hasAnyRole("USER", "LIBRARIAN")
