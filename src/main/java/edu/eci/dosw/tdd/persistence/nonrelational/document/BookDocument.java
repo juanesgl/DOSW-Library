@@ -16,6 +16,10 @@ public class BookDocument {
     private String id;
     private String title;
     private String author;
+    private Integer totalQuantity;
+    private Integer availableQuantity;
+
+    // Extended Mongo-only fields
     private String isbn;
     private List<String> categories;
     private String publicationType;

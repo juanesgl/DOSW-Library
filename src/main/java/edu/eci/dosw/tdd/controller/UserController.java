@@ -43,7 +43,7 @@ public class UserController {
             String token = jwtService.generateToken(userDetails, createdUser.getId());
             responseDto.setToken(token);
         } catch (Exception e) {
-            // Token generation failed, user was still created successfully
+
             responseDto.setToken("User created - please login via /auth/login to get token");
         }
 
