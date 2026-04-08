@@ -14,13 +14,13 @@ import java.time.LocalDate;
 @Builder
 
 public class LoanDTO {
-    private Long id;
+    private String id;
 
     @NotNull(message = "El ID del usuario es obligatorio")
-    private Long userId;
+    private String userId;
 
     @NotNull(message = "El ID del libro es obligatorio")
-    private Long bookId;
+    private String bookId;
     private LocalDate loanDate;
     private String status;
     private LocalDate returnDate;

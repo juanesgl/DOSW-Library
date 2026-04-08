@@ -16,7 +16,7 @@ class SwaggerConfigTest {
         assertNotNull(openAPI);
         assertNotNull(openAPI.getInfo());
         assertEquals("API de la Biblioteca DOSW", openAPI.getInfo().getTitle());
-        assertEquals("1.0.0", openAPI.getInfo().getVersion());
+        assertEquals("3.0.0", openAPI.getInfo().getVersion());
         assertTrue(openAPI.getInfo().getDescription().contains("Swagger UI"));
     }
 }

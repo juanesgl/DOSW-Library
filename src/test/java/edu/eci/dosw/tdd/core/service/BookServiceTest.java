@@ -1,10 +1,8 @@
 package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.model.Book;
+import edu.eci.dosw.tdd.core.repository.BookRepository;
 import edu.eci.dosw.tdd.core.validator.BookValidator;
-import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
-import edu.eci.dosw.tdd.persistence.relational.mapper.BookEntityMapper;
-import edu.eci.dosw.tdd.persistence.relational.repository.BookRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,25 +27,15 @@ class BookServiceTest {
     @Mock
     private BookRepository bookRepository;
 
-    @Mock
-    private BookEntityMapper bookEntityMapper;
-
     @InjectMocks
     private BookService bookService;
 
     private Book sampleBook;
-    private BookEntity sampleEntity;
 
     @BeforeEach
     void setUp() {
         sampleBook = Book.builder()
-                .title("Test Book")
-                .author("Test Author")
-                .totalQuantity(5)
-                .availableQuantity(5)
-                .build();
-        sampleEntity = BookEntity.builder()
-                .id(1L)
+                .id("1")
                 .title("Test Book")
                 .author("Test Author")
                 .totalQuantity(5)
@@ -58,11 +46,7 @@ class BookServiceTest {
     @Test
     void addBook_ShouldAddBookSuccessfully() {
         doNothing().when(bookValidator).validate(any(Book.class));
-        when(bookEntityMapper.toEntity(any(Book.class))).thenReturn(sampleEntity);
-        when(bookRepository.save(any(BookEntity.class))).thenReturn(sampleEntity);
-        when(bookEntityMapper.toModel(any(BookEntity.class))).thenReturn(
-                Book.builder().id(1L).title("Test Book").author("Test Author").totalQuantity(5).availableQuantity(5)
-                        .build());
+        when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
 
         Book addedBook = bookService.addBook(sampleBook);
 
@@ -70,7 +54,7 @@ class BookServiceTest {
         assertEquals("Test Book", addedBook.getTitle());
         assertEquals(5, addedBook.getTotalQuantity());
         verify(bookValidator, times(1)).validate(sampleBook);
-        verify(bookRepository, times(1)).save(any(BookEntity.class));
+        verify(bookRepository, times(1)).save(any(Book.class));
     }
 
     @Test
@@ -99,8 +83,7 @@ class BookServiceTest {
 
     @Test
     void getAllBooks_ShouldReturnInventory() {
-        when(bookRepository.findAll()).thenReturn(Collections.singletonList(sampleEntity));
-        when(bookEntityMapper.toModel(any(BookEntity.class))).thenReturn(sampleBook);
+        when(bookRepository.findAll()).thenReturn(Collections.singletonList(sampleBook));
 
         List<Book> inventory = bookService.getAllBooks();
 
@@ -110,10 +93,9 @@ class BookServiceTest {
 
     @Test
     void getBookById_ShouldReturnBook_WhenExists() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
-        when(bookEntityMapper.toModel(sampleEntity)).thenReturn(sampleBook);
+        when(bookRepository.findById("1")).thenReturn(Optional.of(sampleBook));
 
-        Optional<Book> foundBook = bookService.getBookById(1L);
+        Optional<Book> foundBook = bookService.getBookById("1");
 
         assertTrue(foundBook.isPresent());
         assertEquals("Test Book", foundBook.get().getTitle());
@@ -121,48 +103,48 @@ class BookServiceTest {
 
     @Test
     void isBookAvailable_ShouldReturnTrue_WhenQuantityIsGreaterThanZero() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
+        when(bookRepository.findById("1")).thenReturn(Optional.of(sampleBook));
 
-        assertTrue(bookService.isBookAvailable(1L));
+        assertTrue(bookService.isBookAvailable("1"));
     }
 
     @Test
     void isBookAvailable_ShouldReturnFalse_WhenQuantityIsZero() {
-        BookEntity zeroEntity = BookEntity.builder().id(2L).totalQuantity(5).availableQuantity(0).build();
-        when(bookRepository.findById(2L)).thenReturn(Optional.of(zeroEntity));
+        Book zeroBook = Book.builder().id("2").totalQuantity(5).availableQuantity(0).build();
+        when(bookRepository.findById("2")).thenReturn(Optional.of(zeroBook));
 
-        assertFalse(bookService.isBookAvailable(2L));
+        assertFalse(bookService.isBookAvailable("2"));
     }
 
     @Test
     void decreaseAvailableQuantity_ShouldDecrease() {
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
-        when(bookRepository.save(any(BookEntity.class))).thenReturn(sampleEntity);
+        when(bookRepository.findById("1")).thenReturn(Optional.of(sampleBook));
+        when(bookRepository.save(any(Book.class))).thenReturn(sampleBook);
 
-        bookService.decreaseAvailableQuantity(1L);
+        bookService.decreaseAvailableQuantity("1");
 
-        assertEquals(4, sampleEntity.getAvailableQuantity());
-        verify(bookRepository, times(1)).save(sampleEntity);
+        assertEquals(4, sampleBook.getAvailableQuantity());
+        verify(bookRepository, times(1)).save(sampleBook);
     }
 
     @Test
     void increaseAvailableQuantity_ShouldIncrease() {
-        BookEntity entity = BookEntity.builder().id(1L).totalQuantity(5).availableQuantity(3).build();
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(entity));
-        when(bookRepository.save(any(BookEntity.class))).thenReturn(entity);
+        Book book = Book.builder().id("1").totalQuantity(5).availableQuantity(3).build();
+        when(bookRepository.findById("1")).thenReturn(Optional.of(book));
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
 
-        bookService.increaseAvailableQuantity(1L);
+        bookService.increaseAvailableQuantity("1");
 
-        assertEquals(4, entity.getAvailableQuantity());
-        verify(bookRepository, times(1)).save(entity);
+        assertEquals(4, book.getAvailableQuantity());
+        verify(bookRepository, times(1)).save(book);
     }
 
     @Test
     void increaseAvailableQuantity_ShouldThrow_WhenAlreadyAtMax() {
-        BookEntity entity = BookEntity.builder().id(1L).totalQuantity(5).availableQuantity(5).build();
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(entity));
+        Book book = Book.builder().id("1").totalQuantity(5).availableQuantity(5).build();
+        when(bookRepository.findById("1")).thenReturn(Optional.of(book));
 
-        assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity(1L));
+        assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity("1"));
     }
 
     @Test
@@ -185,39 +167,39 @@ class BookServiceTest {
 
     @Test
     void isBookAvailable_ShouldReturnFalse_WhenBookNotFound() {
-        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+        when(bookRepository.findById("99")).thenReturn(Optional.empty());
 
-        assertFalse(bookService.isBookAvailable(99L));
+        assertFalse(bookService.isBookAvailable("99"));
     }
 
     @Test
     void getBookById_ShouldReturnEmpty_WhenBookDoesNotExist() {
-        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+        when(bookRepository.findById("99")).thenReturn(Optional.empty());
 
-        Optional<Book> result = bookService.getBookById(99L);
+        Optional<Book> result = bookService.getBookById("99");
 
         assertFalse(result.isPresent());
     }
 
     @Test
     void decreaseAvailableQuantity_ShouldThrow_WhenBookNotFound() {
-        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+        when(bookRepository.findById("99")).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> bookService.decreaseAvailableQuantity(99L));
+        assertThrows(IllegalArgumentException.class, () -> bookService.decreaseAvailableQuantity("99"));
     }
 
     @Test
     void decreaseAvailableQuantity_ShouldThrow_WhenNoAvailableCopies() {
-        BookEntity entity = BookEntity.builder().id(1L).totalQuantity(5).availableQuantity(0).build();
-        when(bookRepository.findById(1L)).thenReturn(Optional.of(entity));
+        Book book = Book.builder().id("1").totalQuantity(5).availableQuantity(0).build();
+        when(bookRepository.findById("1")).thenReturn(Optional.of(book));
 
-        assertThrows(IllegalArgumentException.class, () -> bookService.decreaseAvailableQuantity(1L));
+        assertThrows(IllegalArgumentException.class, () -> bookService.decreaseAvailableQuantity("1"));
     }
 
     @Test
     void increaseAvailableQuantity_ShouldThrow_WhenBookNotFound() {
-        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+        when(bookRepository.findById("99")).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity(99L));
+        assertThrows(IllegalArgumentException.class, () -> bookService.increaseAvailableQuantity("99"));
     }
 }

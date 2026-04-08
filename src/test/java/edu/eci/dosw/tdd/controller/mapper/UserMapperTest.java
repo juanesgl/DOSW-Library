@@ -12,11 +12,11 @@ class UserMapperTest {
 
     @Test
     void toEntity_ShouldMapCorrectly() {
-        UserDTO dto = UserDTO.builder().id(1L).name("John").username("john123").password("pass").role("USER").build();
+        UserDTO dto = UserDTO.builder().id("1").name("John").username("john123").password("pass").role("USER").build();
         User entity = mapper.toEntity(dto);
 
         assertNotNull(entity);
-        assertEquals(1L, entity.getId());
+        assertEquals("1", entity.getId());
         assertEquals("John", entity.getName());
         assertEquals("john123", entity.getUsername());
         assertEquals("pass", entity.getPassword());
@@ -30,11 +30,11 @@ class UserMapperTest {
 
     @Test
     void toDto_ShouldMapCorrectly() {
-        User entity = User.builder().id(1L).name("John").username("john123").password("pass").role("USER").build();
+        User entity = User.builder().id("1").name("John").username("john123").password("pass").role("USER").build();
         UserDTO dto = mapper.toDto(entity);
 
         assertNotNull(dto);
-        assertEquals(1L, dto.getId());
+        assertEquals("1", dto.getId());
         assertEquals("John", dto.getName());
         assertEquals("john123", dto.getUsername());
         assertEquals("USER", dto.getRole());

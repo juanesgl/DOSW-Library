@@ -14,7 +14,7 @@ import jakarta.validation.constraints.Min;
 @Builder
 
 public class BookDTO {
-    private Long id;
+    private String id;
 
     @NotBlank(message = "El título es obligatorio")
     private String title;

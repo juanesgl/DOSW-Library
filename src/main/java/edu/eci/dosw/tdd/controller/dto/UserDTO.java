@@ -12,7 +12,7 @@ import jakarta.validation.constraints.NotBlank;
 @Builder
 
 public class UserDTO {
-    private Long id;
+    private String id;
 
     @NotBlank(message = "El nombre es obligatorio")
     private String name;

@@ -47,7 +47,7 @@ public class BookController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'LIBRARIAN')")
     @Operation(summary = "Buscar libro por ID", description = "Busca la información detallada de un libro")
-    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
+    public ResponseEntity<BookDTO> getBookById(@PathVariable String id) {
         Book book = bookService.getBookById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado con ID: " + id));
         return ResponseEntity.ok(bookMapper.toDto(book));

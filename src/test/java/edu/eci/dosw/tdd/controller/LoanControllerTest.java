@@ -50,26 +50,26 @@ class LoanControllerTest {
     @Test
     void createLoan_ShouldReturnCreatedLoan() throws Exception {
         Loan loan = new Loan();
-        LoanDTO responseDTO = LoanDTO.builder().userId(1L).bookId(1L).status("ACTIVE").build();
+        LoanDTO responseDTO = LoanDTO.builder().userId("1").bookId("1").status("ACTIVE").build();
 
-        when(loanService.createLoan(1L, 1L)).thenReturn(loan);
+        when(loanService.createLoan("1", "1")).thenReturn(loan);
         when(loanMapper.toDto(loan)).thenReturn(responseDTO);
 
         mockMvc.perform(post("/loans")
                 .param("userId", "1")
                 .param("bookId", "1"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.userId").value(1))
-                .andExpect(jsonPath("$.bookId").value(1))
+                .andExpect(jsonPath("$.userId").value("1"))
+                .andExpect(jsonPath("$.bookId").value("1"))
                 .andExpect(jsonPath("$.status").value("ACTIVE"));
     }
 
     @Test
     void returnLoan_ShouldReturnUpdatedLoan() throws Exception {
         Loan loan = new Loan();
-        LoanDTO responseDTO = LoanDTO.builder().userId(1L).bookId(1L).status("RETURNED").build();
+        LoanDTO responseDTO = LoanDTO.builder().userId("1").bookId("1").status("RETURNED").build();
 
-        when(loanService.returnLoan(1L, 1L)).thenReturn(loan);
+        when(loanService.returnLoan("1", "1")).thenReturn(loan);
         when(loanMapper.toDto(loan)).thenReturn(responseDTO);
 
         mockMvc.perform(put("/loans/return")
@@ -82,13 +82,13 @@ class LoanControllerTest {
     @Test
     void getAllLoans_ShouldReturnList() throws Exception {
         Loan loan = new Loan();
-        LoanDTO responseDTO = LoanDTO.builder().userId(1L).bookId(1L).build();
+        LoanDTO responseDTO = LoanDTO.builder().userId("1").bookId("1").build();
 
         when(loanService.getAllLoans()).thenReturn(Collections.singletonList(loan));
         when(loanMapper.toDto(loan)).thenReturn(responseDTO);
 
         mockMvc.perform(get("/loans"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].userId").value(1));
+                .andExpect(jsonPath("$[0].userId").value("1"));
     }
 }
