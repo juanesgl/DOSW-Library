@@ -146,4 +146,60 @@ class LoanServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> loanService.createLoan("1", "99"));
     }
+
+    @Test
+    void dadoQueTengo1ReservaRegistrada_cuandoLoConsultoANivelDeServicio_entoncesLaConsultaSeraExitosaValidandoElCampoId() {
+        when(loanRepository.findById("1")).thenReturn(Optional.of(sampleLoan));
+
+        Optional<Loan> result = loanService.getLoanById("1");
+
+        assertTrue(result.isPresent());
+        assertEquals("1", result.get().getId());
+    }
+
+    @Test
+    void dadoQueNoHayNingunaReservaRegistrada_cuandoLaConsultoANivelDeServicio_entoncesLaConsultaNoRetornaNingunResultado() {
+        when(loanRepository.findById("99")).thenReturn(Optional.empty());
+
+        Optional<Loan> result = loanService.getLoanById("99");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void dadoQueNoHayNingunaReservaRegistrada_cuandoLoCreoANivelDeServicio_entoncesLaCreacionSeraExitosa() {
+        when(userRepository.findById("1")).thenReturn(Optional.of(sampleUser));
+        when(bookRepository.findById("1")).thenReturn(Optional.of(sampleBook));
+        when(bookService.isBookAvailable("1")).thenReturn(true);
+        when(loanRepository.countByUserIdAndStatus("1", LoanStatus.ACTIVE)).thenReturn(0L);
+        when(loanRepository.save(any(Loan.class))).thenReturn(sampleLoan);
+        doNothing().when(loanValidator).validateLoanCreation(any(), any());
+        doNothing().when(bookService).decreaseAvailableQuantity("1");
+
+        Loan loan = loanService.createLoan("1", "1");
+
+        assertNotNull(loan);
+        assertEquals(LoanStatus.ACTIVE, loan.getStatus());
+        verify(loanRepository, times(1)).save(any(Loan.class));
+    }
+
+    @Test
+    void dadoQueTengo1ReservaRegistrada_cuandoLaEliminoANivelDeServicio_entoncesLaEliminacionSeraExitosa() {
+        doNothing().when(loanRepository).delete("1");
+
+        assertDoesNotThrow(() -> loanService.deleteLoan("1"));
+        verify(loanRepository, times(1)).delete("1");
+    }
+
+    @Test
+    void dadoQueTengo1ReservaRegistrada_cuandoLaEliminoYConsultoANivelDeServicio_entoncesElResultadoDeLaConsultaNoRetornaNingunResultado() {
+        doNothing().when(loanRepository).delete("1");
+        when(loanRepository.findById("1")).thenReturn(Optional.empty());
+
+        loanService.deleteLoan("1");
+        Optional<Loan> result = loanService.getLoanById("1");
+
+        verify(loanRepository, times(1)).delete("1");
+        assertTrue(result.isEmpty());
+    }
 }

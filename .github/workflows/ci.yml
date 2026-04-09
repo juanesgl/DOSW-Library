@@ -1,0 +1,73 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+          
+      - name: Maven Compile
+        run: mvn compile
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Maven Verify
+        run: mvn verify
+        
+      - name: Respuesta a pregunta
+        run: |
+          echo "Respuesta: ¿Se puede ejecutar sin necesidad de compilar el proyecto?"
+          echo "Sí, es posible si compilamos primero en el paso 'build', guardamos la carpeta 'target' como artifact de GitHub Actions y luego lo descargamos en este paso 'test' corriendo especificamente el goal de 'surefire:test'. Sin embargo, en el default de Maven, la fase 'verify' o 'test' dispara automáticamente la compilación si no detecta los .class construidos."
+
+  analysis:
+    name: Analysis
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Static Code Analysis & Coverage
+        run: mvn org.jacoco:jacoco-maven-plugin:prepare-agent verify org.jacoco:jacoco-maven-plugin:report
+
+  deploy:
+    name: Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build Message
+        run: echo "En construcción ..."
