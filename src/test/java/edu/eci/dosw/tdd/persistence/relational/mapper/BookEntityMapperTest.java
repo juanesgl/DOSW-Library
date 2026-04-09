@@ -1,4 +1,4 @@
-package edu.eci.dosw.tdd.persistence.mapper;
+package edu.eci.dosw.tdd.persistence.relational.mapper;
 
 import edu.eci.dosw.tdd.core.model.Book;
 import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
@@ -29,7 +29,7 @@ class BookEntityMapperTest {
         Book model = mapper.toModel(entity);
 
         assertNotNull(model);
-        assertEquals(1L, model.getId());
+        assertEquals("1", model.getId());
         assertEquals("Clean Code", model.getTitle());
         assertEquals("Uncle Bob", model.getAuthor());
         assertEquals(5, model.getTotalQuantity());
@@ -44,7 +44,7 @@ class BookEntityMapperTest {
     @Test
     void toEntity_ShouldMapAllFields() {
         Book model = Book.builder()
-                .id(1L)
+                .id("1")
                 .title("Clean Code")
                 .author("Uncle Bob")
                 .totalQuantity(5)

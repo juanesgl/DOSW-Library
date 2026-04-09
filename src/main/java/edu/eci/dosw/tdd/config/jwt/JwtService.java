@@ -24,7 +24,7 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public String generateToken(UserDetails userDetails, Long userId) {
+    public String generateToken(UserDetails userDetails, String userId) {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("role", userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)

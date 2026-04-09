@@ -31,7 +31,6 @@ public class UserController {
     private final CustomUserDetailsService customUserDetailsService;
 
     @PostMapping
-    @PreAuthorize("hasRole('LIBRARIAN')")
     @Operation(summary = "Crear un nuevo usuario", description = "Registra un usuario en el sistema")
     public ResponseEntity<UserDTO> registerUser(@Valid @RequestBody UserDTO userDTO) {
         User user = userMapper.toEntity(userDTO);
@@ -39,9 +38,14 @@ public class UserController {
 
         UserDTO responseDto = userMapper.toDto(createdUser);
 
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(createdUser.getUsername());
-        String token = jwtService.generateToken(userDetails, createdUser.getId());
-        responseDto.setToken(token);
+        try {
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(createdUser.getUsername());
+            String token = jwtService.generateToken(userDetails, createdUser.getId());
+            responseDto.setToken(token);
+        } catch (Exception e) {
+
+            responseDto.setToken("User created - please login via /auth/login to get token");
+        }
 
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
@@ -59,7 +63,7 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('LIBRARIAN')")
     @Operation(summary = "Obtener usuario por ID", description = "Busca un usuario por su identificador único")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable String id) {
         User user = userService.getUserById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + id));
         return ResponseEntity.ok(userMapper.toDto(user));

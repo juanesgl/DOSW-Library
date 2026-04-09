@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class Loan {
-    private Long id;
+    private String id;
     private Book book;
     private User user;
     private LocalDate loanDate;

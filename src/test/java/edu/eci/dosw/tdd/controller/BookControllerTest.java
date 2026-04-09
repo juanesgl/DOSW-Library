@@ -60,10 +60,10 @@ class BookControllerTest {
         void addBook_ShouldReturnCreatedBook() throws Exception {
                 BookDTO bookDTO = BookDTO.builder().title("Clean Code").author("Uncle Bob").totalQuantity(5)
                                 .availableQuantity(5).build();
-                Book book = Book.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                Book book = Book.builder().id("1").title("Clean Code").author("Uncle Bob").totalQuantity(5)
                                 .availableQuantity(5)
                                 .build();
-                BookDTO responseDTO = BookDTO.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                BookDTO responseDTO = BookDTO.builder().id("1").title("Clean Code").author("Uncle Bob").totalQuantity(5)
                                 .availableQuantity(5).build();
 
                 when(bookMapper.toEntity(any(BookDTO.class))).thenReturn(book);
@@ -74,16 +74,16 @@ class BookControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(bookDTO)))
                                 .andExpect(status().isCreated())
-                                .andExpect(jsonPath("$.id").value(1))
+                                .andExpect(jsonPath("$.id").value("1"))
                                 .andExpect(jsonPath("$.title").value("Clean Code"));
         }
 
         @Test
         void getAllBooks_ShouldReturnInventory() throws Exception {
-                Book book = Book.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                Book book = Book.builder().id("1").title("Clean Code").author("Uncle Bob").totalQuantity(5)
                                 .availableQuantity(5)
                                 .build();
-                BookDTO bookDTO = BookDTO.builder().id(1L).title("Clean Code").author("Uncle Bob").totalQuantity(5)
+                BookDTO bookDTO = BookDTO.builder().id("1").title("Clean Code").author("Uncle Bob").totalQuantity(5)
                                 .availableQuantity(5).build();
 
                 when(bookService.getAllBooks()).thenReturn(Collections.singletonList(book));
@@ -91,26 +91,26 @@ class BookControllerTest {
 
                 mockMvc.perform(get("/books"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$[0].id").value(1))
+                                .andExpect(jsonPath("$[0].id").value("1"))
                                 .andExpect(jsonPath("$[0].totalQuantity").value(5));
         }
 
         @Test
         void getBookById_ShouldReturnBook_WhenExists() throws Exception {
-                Book book = Book.builder().id(1L).title("Clean Code").build();
-                BookDTO bookDTO = BookDTO.builder().id(1L).title("Clean Code").build();
+                Book book = Book.builder().id("1").title("Clean Code").build();
+                BookDTO bookDTO = BookDTO.builder().id("1").title("Clean Code").build();
 
-                when(bookService.getBookById(1L)).thenReturn(Optional.of(book));
+                when(bookService.getBookById("1")).thenReturn(Optional.of(book));
                 when(bookMapper.toDto(book)).thenReturn(bookDTO);
 
                 mockMvc.perform(get("/books/1"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.id").value(1));
+                                .andExpect(jsonPath("$.id").value("1"));
         }
 
     @Test
     void getBookById_ShouldReturnBadRequest_WhenBookNotFound() throws Exception {
-        when(bookService.getBookById(99L)).thenReturn(Optional.empty());
+        when(bookService.getBookById("99")).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/books/99"))
                 .andExpect(status().isBadRequest());

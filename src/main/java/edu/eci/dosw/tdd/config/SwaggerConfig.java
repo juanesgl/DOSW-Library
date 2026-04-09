@@ -17,7 +17,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("API de la Biblioteca DOSW")
-                        .version("1.0.0")
+                        .version("3.0.0")
                         .description(
                                 "Documentación interactiva con Swagger UI para la gestión de libros, usuarios y préstamos de la empresa DOSW."))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))

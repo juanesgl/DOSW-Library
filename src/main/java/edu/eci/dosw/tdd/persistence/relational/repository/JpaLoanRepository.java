@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository
-public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
+public interface JpaLoanRepository extends JpaRepository<LoanEntity, Long> {
     long countByUserIdAndStatus(Long userId, LoanStatus status);
 
     Optional<LoanEntity> findFirstByUserIdAndBookIdAndStatus(Long userId, Long bookId, LoanStatus status);

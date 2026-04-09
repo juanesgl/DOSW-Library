@@ -4,6 +4,5 @@ import edu.eci.dosw.tdd.persistence.relational.entity.BookEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
-public interface BookRepository extends JpaRepository<BookEntity, Long> {
+public interface JpaBookRepository extends JpaRepository<BookEntity, Long> {
 }

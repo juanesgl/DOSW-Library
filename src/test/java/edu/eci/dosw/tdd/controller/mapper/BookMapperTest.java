@@ -12,12 +12,12 @@ class BookMapperTest {
 
     @Test
     void toEntity_ShouldMapCorrectly() {
-        BookDTO dto = BookDTO.builder().id(1L).title("Title").author("Author").totalQuantity(5).availableQuantity(3)
+        BookDTO dto = BookDTO.builder().id("1").title("Title").author("Author").totalQuantity(5).availableQuantity(3)
                 .build();
         Book entity = mapper.toEntity(dto);
 
         assertNotNull(entity);
-        assertEquals(1L, entity.getId());
+        assertEquals("1", entity.getId());
         assertEquals("Title", entity.getTitle());
         assertEquals("Author", entity.getAuthor());
         assertEquals(5, entity.getTotalQuantity());
@@ -31,12 +31,12 @@ class BookMapperTest {
 
     @Test
     void toDto_ShouldMapCorrectly() {
-        Book entity = Book.builder().id(1L).title("Title").author("Author").totalQuantity(5).availableQuantity(3)
+        Book entity = Book.builder().id("1").title("Title").author("Author").totalQuantity(5).availableQuantity(3)
                 .build();
         BookDTO dto = mapper.toDto(entity);
 
         assertNotNull(dto);
-        assertEquals(1L, dto.getId());
+        assertEquals("1", dto.getId());
         assertEquals("Title", dto.getTitle());
         assertEquals("Author", dto.getAuthor());
         assertEquals(5, dto.getTotalQuantity());

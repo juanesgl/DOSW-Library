@@ -1,10 +1,8 @@
 package edu.eci.dosw.tdd.core.service;
 
 import edu.eci.dosw.tdd.core.model.User;
+import edu.eci.dosw.tdd.core.repository.UserRepository;
 import edu.eci.dosw.tdd.core.validator.UserValidator;
-import edu.eci.dosw.tdd.persistence.relational.entity.UserEntity;
-import edu.eci.dosw.tdd.persistence.relational.mapper.UserEntityMapper;
-import edu.eci.dosw.tdd.persistence.relational.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,33 +29,23 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserEntityMapper userEntityMapper;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
 
     private User sampleUser;
-    private UserEntity sampleEntity;
 
     @BeforeEach
     void setUp() {
-        sampleUser = User.builder().name("Test User").username("testuser").password("pass").role("USER").build();
-        sampleEntity = UserEntity.builder().id(1L).name("Test User").username("testuser").password("encodedpass")
-                .role("USER")
-                .build();
+        sampleUser = User.builder().id("1").name("Test User").username("testuser").password("pass").role("USER").build();
     }
 
     @Test
     void registerUser_ShouldRegisterUserSuccessfully() {
         doNothing().when(userValidator).validate(any(User.class));
         when(passwordEncoder.encode("pass")).thenReturn("encodedpass");
-        when(userEntityMapper.toEntity(any(User.class))).thenReturn(sampleEntity);
-        when(userRepository.save(any(UserEntity.class))).thenReturn(sampleEntity);
-        when(userEntityMapper.toModel(any(UserEntity.class))).thenReturn(
-                User.builder().id(1L).name("Test User").username("testuser").role("USER").build());
+        when(userRepository.save(any(User.class))).thenReturn(sampleUser);
 
         User registeredUser = userService.registerUser(sampleUser);
 
@@ -65,7 +53,7 @@ class UserServiceTest {
         assertEquals("Test User", registeredUser.getName());
         verify(userValidator, times(1)).validate(sampleUser);
         verify(passwordEncoder, times(1)).encode("pass");
-        verify(userRepository, times(1)).save(any(UserEntity.class));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
@@ -82,8 +70,7 @@ class UserServiceTest {
 
     @Test
     void getAllUsers_ShouldReturnListOfUsers() {
-        when(userRepository.findAll()).thenReturn(Collections.singletonList(sampleEntity));
-        when(userEntityMapper.toModel(any(UserEntity.class))).thenReturn(sampleUser);
+        when(userRepository.findAll()).thenReturn(Collections.singletonList(sampleUser));
 
         List<User> users = userService.getAllUsers();
 
@@ -93,10 +80,9 @@ class UserServiceTest {
 
     @Test
     void getUserById_ShouldReturnUser_WhenUserExists() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(sampleEntity));
-        when(userEntityMapper.toModel(sampleEntity)).thenReturn(sampleUser);
+        when(userRepository.findById("1")).thenReturn(Optional.of(sampleUser));
 
-        Optional<User> foundUser = userService.getUserById(1L);
+        Optional<User> foundUser = userService.getUserById("1");
 
         assertTrue(foundUser.isPresent());
         assertEquals("Test User", foundUser.get().getName());
@@ -104,9 +90,9 @@ class UserServiceTest {
 
     @Test
     void getUserById_ShouldReturnEmpty_WhenUserDoesNotExist() {
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+        when(userRepository.findById("99")).thenReturn(Optional.empty());
 
-        Optional<User> foundUser = userService.getUserById(99L);
+        Optional<User> foundUser = userService.getUserById("99");
 
         assertFalse(foundUser.isPresent());
     }

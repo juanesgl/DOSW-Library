@@ -1,10 +1,9 @@
 package edu.eci.dosw.tdd.config.security;
 
-import edu.eci.dosw.tdd.persistence.relational.entity.UserEntity;
-import edu.eci.dosw.tdd.persistence.relational.repository.UserRepository;
+import edu.eci.dosw.tdd.core.model.User;
+import edu.eci.dosw.tdd.core.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,20 +19,20 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity userEntity = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Usuario no encontrado con username: " + username));
 
-        return new User(
-                userEntity.getUsername(),
-                userEntity.getPassword(),
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
                 Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + userEntity.getRole().toUpperCase())));
+                        new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase())));
     }
 
-    public Long getUserIdByUsername(String username) {
+    public String getUserIdByUsername(String username) {
         return userRepository.findByUsername(username)
-                .map(UserEntity::getId)
+                .map(User::getId)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "Usuario no encontrado con username: " + username));
     }

@@ -30,7 +30,7 @@ public class LoanController {
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'LIBRARIAN')")
     @Operation(summary = "Crear un préstamo", description = "Asigna un libro a un usuario")
-    public ResponseEntity<LoanDTO> createLoan(@RequestParam Long userId, @RequestParam Long bookId) {
+    public ResponseEntity<LoanDTO> createLoan(@RequestParam String userId, @RequestParam String bookId) {
         Loan newLoan = loanService.createLoan(userId, bookId);
         return new ResponseEntity<>(loanMapper.toDto(newLoan), HttpStatus.CREATED);
     }
@@ -38,7 +38,7 @@ public class LoanController {
     @PutMapping("/return")
     @PreAuthorize("hasAnyRole('USER', 'LIBRARIAN')")
     @Operation(summary = "Devolver un libro", description = "Registra la devolución de un libro prestado")
-    public ResponseEntity<LoanDTO> returnLoan(@RequestParam Long userId, @RequestParam Long bookId) {
+    public ResponseEntity<LoanDTO> returnLoan(@RequestParam String userId, @RequestParam String bookId) {
         Loan returnedLoan = loanService.returnLoan(userId, bookId);
         return ResponseEntity.ok(loanMapper.toDto(returnedLoan));
     }
@@ -57,7 +57,7 @@ public class LoanController {
     @PreAuthorize("hasAnyRole('USER', 'LIBRARIAN')")
     @Operation(summary = "Mis préstamos", description = "Devuelve los préstamos del usuario autenticado")
     public ResponseEntity<List<LoanDTO>> getMyLoans(Authentication authentication) {
-        Long userId = customUserDetailsService.getUserIdByUsername(authentication.getName());
+        String userId = customUserDetailsService.getUserIdByUsername(authentication.getName());
         List<LoanDTO> loans = loanService.getLoansByUserId(userId).stream()
                 .map(loanMapper::toDto)
                 .collect(Collectors.toList());

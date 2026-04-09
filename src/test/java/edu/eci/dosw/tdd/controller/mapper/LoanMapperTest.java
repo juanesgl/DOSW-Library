@@ -17,11 +17,11 @@ class LoanMapperTest {
 
     @Test
     void toDto_ShouldMapCorrectly() {
-        User user = User.builder().id(1L).build();
-        Book book = Book.builder().id(1L).build();
+        User user = User.builder().id("1").build();
+        Book book = Book.builder().id("1").build();
         LocalDate now = LocalDate.now();
         Loan entity = Loan.builder()
-                .id(1L)
+                .id("1")
                 .user(user)
                 .book(book)
                 .loanDate(now)
@@ -31,9 +31,9 @@ class LoanMapperTest {
         LoanDTO dto = mapper.toDto(entity);
 
         assertNotNull(dto);
-        assertEquals(1L, dto.getId());
-        assertEquals(1L, dto.getUserId());
-        assertEquals(1L, dto.getBookId());
+        assertEquals("1", dto.getId());
+        assertEquals("1", dto.getUserId());
+        assertEquals("1", dto.getBookId());
         assertEquals(now, dto.getLoanDate());
         assertEquals("ACTIVE", dto.getStatus());
     }
