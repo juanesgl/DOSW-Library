@@ -23,15 +23,16 @@ spring:
   # 2. Config MongoDB (NoSQL)
   data:
     mongodb:
-      uri: ${MONGO_URI}
+      uri: ${SPRING_DATA_MONGODB_URI:${MONGO_URI}}
       database: dosw_library
 
 # Config server and SSL
 server:
-  port: 8443
+  port: ${PORT:80}
   ssl:
-    key-store: ${SSL_KEYSTORE_PATH}
-    key-store-password: ${SSL_KEYSTORE_PASSWORD}
+    enabled: ${SSL_ENABLED:false}
+    key-store: ${SSL_KEYSTORE_PATH:}
+    key-store-password: ${SSL_KEYSTORE_PASSWORD:}
     key-store-type: PKCS12
     key-alias: dosw-library
 
