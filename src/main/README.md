@@ -1,6 +1,8 @@
 # Arquitectura y Diseño del Sistema 🏛️
 
-Este documento describe la arquitectura y el diseño técnico del sistema de biblioteca, detallando su estructura a través de diversos diagramas.
+Este documento amplía el **diseño de alto nivel** del backend con diagramas UML, Mermaid y modelos de datos. La visión consolidada (contexto, capas, perfiles `mongo`/`relational`, seguridad y despliegue) está en [**docs/high-level-design-backend.md**](../../docs/high-level-design-backend.md) *(Reto #8)*.
+
+A continuación: detalle de la arquitectura del sistema de biblioteca a través de diagramas.
 
 ## 🏗️ Diagramas 
 
@@ -223,3 +225,85 @@ cada préstamo y mantener la integridad de los datos.
 Además, el control entre total_quantity y available_quantity ayuda a manejar el 
 inventario en tiempo real sin inconsistencias. 
 En general, es un modelo simple pero sólido para controlar libros y usuarios.
+
+
+--- 
+
+### 4. Diagrama Modelo No Relacional 
+
+
+```mermaid	
+
+
+classDiagram
+    direction TB
+
+    %% ==========================================
+    %% CAPA LÓGICA (Clases de tu aplicación)
+    %% ==========================================
+    class User {
+        
+    }
+    
+    class Book {
+        
+    }
+    
+    class Metadata {
+        
+    }
+    
+    class Availability {
+        
+    }
+    
+    class Loan {
+        
+    }
+    
+    class History {
+        
+    }
+
+    %% Relaciones de Embebido (Composición: Diamante Negro)
+    %% Significan que viven dentro del documento
+    Book *-- Metadata : /metadata
+    Book *-- Availability : /availability
+    Loan *-- History : /history
+
+    %% Relaciones de Referencia (Agregación: Diamante Blanco)
+    %% Significan que solo guardamos el ID
+    Loan o-- User : /user_id
+    Loan o-- Book : /book_id
+
+    %% ==========================================
+    %% CAPA FÍSICA (NoSQL Documents)
+    %% ==========================================
+    namespace NoSQL_Database {
+        class User_Document {
+            <<Document>>
+        }
+        class Book_Document {
+            <<Document>>
+        }
+        class Loan_Document {
+            <<Document>>
+        }
+    }
+
+    %% Flechas de Mapeo (Líneas punteadas hacia los documentos)
+    %% Mapeo de Usuario
+    User ..|> User_Document
+
+    %% Mapeo de Libro y sus embebidos hacia el MISMO documento
+    Book ..|> Book_Document
+    Metadata ..|> Book_Document
+    Availability ..|> Book_Document
+
+    %% Mapeo de Préstamo y su historial hacia el MISMO documento
+    Loan ..|> Loan_Document
+    History ..|> Loan_Document
+
+```
+
+Este diseño refleja una arquitectura híbrida de persistencia NoSQL muy bien pensada para una base de datos documental como MongoDB. Lo más destacado es cómo aprovechas el patrón de embebido (composición) para agrupar datos que siempre se consultan juntos, como los detalles de Metadata y Availability dentro del documento Book, lo que reduce drásticamente el número de lecturas necesarias en el servidor. Al mismo tiempo, utilizas con acierto el patrón de referencia (agregación) en Loan para vincular usuarios y libros mediante IDs, evitando la duplicación masiva de datos que suelen cambiar con frecuencia. En resumen, el diagrama muestra una transición clara de la lógica de negocio a una estructura física optimizada para minimizar los JOINs en tiempo de ejecución, manteniendo la integridad referencial solo donde es estrictamente necesario.

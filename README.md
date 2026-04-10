@@ -1,118 +1,142 @@
 # DOSW Library System 📚
 
-Sistema de gestión de biblioteca desarrollado con **Spring Boot**, diseñado para gestionar libros, usuarios y préstamos de manera eficiente, siguiendo principios de desarrollo guiado por pruebas.
+Sistema de gestión de biblioteca con **Spring Boot**, con libros, usuarios y préstamos, desarrollo guiado por pruebas (TDD) y API documentada.
 
 ## 🚀 Características
 
-- **Seguridad Avanzada**:
-  - Autenticación y Autorización mediante **JWT (JSON Web Tokens)** Stateless.
-  - Control de Acceso Basado en Roles (RBAC) con perfiles `USER` y `LIBRARIAN`.
-  - Conexión segura obligatoria vía **HTTPS/SSL** (TLS) con certificado PKCS12.
-- **Gestión de Usuarios**: Registro, encriptación de contraseñas y consulta de usuarios.
-- **Inventario de Libros**: Control de stock, adición de libros y consulta de catálogo.
-- **Sistema de Préstamos**: 
-  - Préstamo de libros a usuarios.
-  - Devolución de libros con actualización automática de stock.
-  - Extracción de préstamos personales para el usuario autenticado (`/loans/my`).
-  - Límite de 3 préstamos activos por usuario y validación de disponibilidad.
-- **Protección de Entrada**: Validaciones estrictas de datos de entrada en todos los DTOs mediante anotaciones de Spring Validation, con respuestas de error estructuradas (400 Bad Request).
-- **Documentación Interactiva**: API documentada con Swagger/OpenAPI (con soporte para Bearer Token Auth).
-- **Cobertura de Pruebas**: Suite completa de pruebas unitarias y de integración de seguridad con reportes de JaCoCo. Ver [Análisis de Cobertura](src/test/README.md).
+- **Seguridad**:
+  - Autenticación con **JWT** (stateless).
+  - RBAC con roles `USER` y `LIBRARIAN`.
+  - **HTTPS opcional** (TLS con keystore PKCS12); en local o en la nube puedes usar HTTP si `SSL_ENABLED=false`.
+- **Persistencia dual (perfiles Spring)**:
+  - Perfil **`mongo`** (por defecto): **MongoDB** (por ejemplo Atlas); sin arranque de JDBC/Hibernate.
+  - Perfil **`relational`**: **PostgreSQL** + **Spring Data JPA** / Hibernate.
+- **Gestión de usuarios**: registro, contraseñas con BCrypt, consultas según rol.
+- **Inventario de libros**: catálogo, stock y altas (bibliotecario).
+- **Préstamos**:
+  - Creación y devolución con actualización de disponibilidad.
+  - `GET /loans/my` para el usuario autenticado.
+  - Límite de préstamos activos y validaciones de negocio.
+- **Validación**: DTOs con Spring Validation y respuestas de error coherentes (`GlobalExceptionHandler`).
+- **Documentación**: **SpringDoc / OpenAPI** (Swagger UI) con soporte Bearer JWT.
+- **Pruebas**: unitarias, integración con `MockMvc`, seguridad; **JaCoCo** para cobertura. Detalle en [Análisis de cobertura](src/test/README.md).
+- **CI**: GitHub Actions (compilación, tests con `JWT_SECRET_KEY`).
 
-## 🛠️ Tecnologías y Herramientas
+## 🛠️ Tecnologías
 
-- **Java 21**: Lenguaje de programación.
-- **Spring Boot 3.4.3**: Framework principal.
-- **Spring Security & JJWT**: Seguridad integral, filtros y generación de tokens JWT.
-- **Spring Data JPA**: Capa de persistencia y mapeo objeto-relacional (ORM).
-- **Spring Validation**: Reglas estrictas de validación de datos en controladores y DTOs (`@Valid`, `@NotNull`, `@NotBlank`).
-- **Maven**: Gestión de dependencias y construcción.
-- **Lombok**: Reducción de código repetitivo.
-- **JUnit 5 & Mockito**: Pruebas unitarias, mocks y `MockMvc` para integración web.
-- **SpringDoc OpenAPI (Swagger)**: Documentación de la API segura.
-- **JaCoCo**: Reporte de cobertura de código.
-- **SonarQube**: Análisis estático
-- **PostgreSQL**: Base de datos relacional.
-- **Docker**: Contenedor para trabajo en Windows y Linux.
+| Área | Stack |
+|------|--------|
+| Runtime | Java **21**, Spring Boot **3.4.3** |
+| Web / API | Spring Web, SpringDoc OpenAPI **2.8.4** |
+| Seguridad | Spring Security, **jjwt** |
+| NoSQL | Spring Data **MongoDB** |
+| SQL | Spring Data **JPA**, Hibernate, **PostgreSQL** (perfil `relational`) |
+| Tests | JUnit 5, Mockito, H2 en memoria (perfil `relational` en test) |
+| Build | Maven, Lombok |
 
-## 📋 Requisitos Previos
+## 📋 Requisitos
 
-- Java JDK 21 o superior.
-- Maven 3.8 o superior.
+- **JDK 21+**
+- **Maven 3.8+**
+- Según perfil:
+  - **`mongo`**: URI de MongoDB (`MONGO_URI` o `SPRING_DATA_MONGODB_URI`).
+  - **`relational`**: PostgreSQL accesible y variables `DB_URL`, `DB_USER`, `DB_PASSWORD`.
 
-## ⚙️ Instalación y Ejecución
+## ⚙️ Perfiles y configuración
 
-1. Clonar el repositorio.
-2. Construir el proyecto:
-   ```bash
-   mvn clean install
-   ```
-3. Ejecutar la aplicación:
-   ```bash
-   mvn spring-boot:run
-   ```
-La aplicación estará disponible de forma segura en `https://localhost:8443` *(Nota: Debido al certificado autofirmado local, el navegador mostrará una advertencia de seguridad que debe aceptarse).*
+| Perfil | Archivo principal | Base de datos |
+|--------|-------------------|---------------|
+| `mongo` *(default)* | `application.yaml` + `application-mongo.yaml` | MongoDB (JPA desactivado) |
+| `relational` | `application-relational.yaml` | PostgreSQL + JPA |
 
-## 📖 Documentación de la API
+Variables habituales:
 
-Una vez iniciada la aplicación, puedes acceder a la documentación interactiva en:
-- **Swagger UI**: [https://localhost:8443/swagger-ui/index.html](https://localhost:8443/swagger-ui/index.html)
-- **OpenAPI JSON**: [https://localhost:8443/v3/api-docs](https://localhost:8443/v3/api-docs)
+| Variable | Uso |
+|----------|-----|
+| `SPRING_PROFILES_ACTIVE` | `mongo` o `relational` |
+| `SPRING_DATA_MONGODB_URI` / `MONGO_URI` | Cadena de conexión MongoDB |
+| `DB_URL`, `DB_USER`, `DB_PASSWORD` | JDBC PostgreSQL (perfil `relational`) |
+| `JWT_SECRET_KEY` | Secreto para firmar JWT (**obligatorio en producción**) |
+| `PORT` | Puerto HTTP(S) (p. ej. Azure App Service suele inyectar **80**) |
+| `SSL_ENABLED`, `SSL_KEYSTORE_PATH`, `SSL_KEYSTORE_PASSWORD` | TLS opcional |
 
-> **Importante**: Para usar los endpoints protegidos, primero debes autenticarte en `/auth/login` con tus credenciales. Luego debes copiar el `token` devuelto y pegarlo dando clic en el botón verde **`Authorize 🔓`** en la parte superior derecha de Swagger.
+Ejemplos:
 
-### Endpoints Principales:
-- `POST /auth/login`: Autenticación y obtención de JWT `(Público)`.
-- `GET /users`: Listar usuarios `(Solo LIBRARIAN)`.
-- `POST /users`: Registrar usuario inicial `(Solo LIBRARIAN)`.
-- `GET /books`: Ver catálogo e inventario `(USER, LIBRARIAN)`.
-- `POST /books`: Agregar libro al inventario `(Solo LIBRARIAN)`.
-- `POST /loans?userId={id}&bookId={id}`: Crear un préstamo `(USER, LIBRARIAN)`.
-- `PUT /loans/return?userId={id}&bookId={id}`: Devolver un libro `(USER, LIBRARIAN)`.
-- `GET /loans/my`: Ver préstamos activos del usuario autenticado `(USER, LIBRARIAN)`.
+```bash
+# Local con MongoDB (por defecto en application.yaml)
+export MONGO_URI="mongodb+srv://usuario:pass@cluster/ejemplo"
+export JWT_SECRET_KEY="tu-secreto-largo-en-base64-o-texto-seguro"
+mvn spring-boot:run
+```
 
-## 🧪 Pruebas y Calidad
+```bash
+# Local con PostgreSQL
+export SPRING_PROFILES_ACTIVE=relational
+export DB_URL=jdbc:postgresql://localhost:5432/dosw_library
+export DB_USER=postgres
+export DB_PASSWORD=...
+export JWT_SECRET_KEY="..."
+mvn spring-boot:run
+```
 
-El proyecto cuenta con una cobertura exhaustiva en todas sus capas:
+**Despliegue (p. ej. Azure App Service)**: suele usarse `SPRING_PROFILES_ACTIVE=mongo`, `SPRING_DATA_MONGODB_URI` (o `MONGO_URI`) y `JWT_SECRET_KEY`. Con perfil `mongo` la aplicación **no** intenta conectar a PostgreSQL en `localhost`.
 
-### Ejecutar Pruebas
+## 🌐 URL base y Swagger
+
+El puerto y el esquema dependen de `PORT` y `SSL_ENABLED`:
+
+- Con **SSL desactivado** (por defecto en `application.yaml`): suele ser `http://localhost:80` (o el `PORT` que definas).
+- Con **SSL activado** y keystore configurado: `https://localhost:<PORT>` (certificado autofirmado en local: el navegador mostrará advertencia).
+
+Documentación interactiva:
+
+- **Swagger UI**: `/swagger-ui/index.html`
+- **OpenAPI JSON**: `/v3/api-docs`
+
+> En endpoints protegidos: autenticarse en `POST /auth/login`, copiar el `token` y usar **Authorize** en Swagger con el prefijo `Bearer `.
+
+### Endpoints principales
+
+- `POST /auth/login` — login *(público)*  
+- `GET /users`, `POST /users` — gestión de usuarios *(según rol)*  
+- `GET /books`, `POST /books` — catálogo y altas *(según rol)*  
+- `POST /loans`, `PUT /loans/return`, `GET /loans/my` — préstamos *(según rol)*  
+
+La lista exacta y los cuerpos de petición están en Swagger.
+
+## 🧪 Pruebas y calidad
+
 ```bash
 mvn clean test
 ```
 
-### Reporte de Cobertura (JaCoCo)
-Después de ejecutar las pruebas, el reporte se genera en:
-`target/site/jacoco/index.html`
+Reporte JaCoCo: `target/site/jacoco/index.html`
 
-### Estructura de Pruebas:
-- **Core Services**: Lógica de negocio y reglas de validación.
-- **Controllers**: Pruebas de integración web con `MockMvc`.
-- **Security Integration Tests**: Verificación estricta de filtros JWT, respuestas `401 Unauthorized` por tokens faltantes/falsos y `403 Forbidden` por restricción de roles.
-- **Mappers & Validators**: Validación de datos y transformación de DTOs.
+En tests se usa perfil **`relational`** con **H2** en memoria y Mongo desactivado (ver `src/test/resources/application.properties`).
 
-### Videos demostrativos: 
+## 📁 Estructura del código
 
-Ver los videos para cada parte de la biblioteca [Videos explicativos](docs/videos.md)
-
-## 📁 Estructura del Proyecto
-
-Ver [Documentación de Arquitectura](src/main/README.md) para más detalles.
+Más diagramas y detalle en [Arquitectura](src/main/README.md).
 
 ```text
 src/main/java/edu/eci/dosw/tdd/
-├── config/             # Configuraciones de Spring, CORS, HTTPS, Swagger y Security (JWT)
-├── controller/         # Endpoints REST, manejador global de errores (Validaciones)
-│   ├── dto/            # Data Transfer Objects asegurados con @NotBlank/@NotNull
-│   └── mapper/         # Mapeos que excluyen hashes de contraseña en respuestas
-├── core/               # Lógica de negocio (Dominio)
-│   ├── exception/      # Excepciones personalizadas
-│   ├── model/          # Entidades (Incluyendo contraseñas encriptadas)
-│   ├── service/        # Servicios core
-│   ├── util/           # Utilidades
-│   └── validator/      # Validadores de negocio
-├── persistence/        # Repositorios JPA
+├── config/                 # Security, JWT, Swagger, CORS, etc.
+├── controller/             # REST, DTOs, mappers, manejo global de errores
+├── core/                   # Dominio: modelos, servicios, validadores, excepciones
+│   └── repository/         # Interfaces de repositorio (puertos)
+├── persistence/
+│   ├── nonrelational/      # Perfil mongo: documentos, mappers, MongoRepository
+│   └── relational/         # Perfil relational: entidades JPA, mappers, JpaRepository
 └── DoswLibraryApplication.java
 ```
 
+## 📎 Enlaces
+
+- [**High Level Design**](docs/HLD_DOSW_Library.pdf)
+- [Videos explicativos](docs/videos.md)
+- [Cobertura y pruebas](src/test/README.md)
+- [Arquitectura UML / Mermaid (detalle)](src/main/README.md)
+
 ---
-*Este proyecto fue desarrollado como ejercicio de clase para la asignatura de Desarrollo de Operaciones de Software (DOSW).*
+
+*Proyecto de la asignatura **Desarrollo de Operaciones de Software (DOSW)** — ECI.*
